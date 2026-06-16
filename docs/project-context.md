@@ -62,12 +62,12 @@ kwickly-client/
 - [x] **My QR Code:** (`/dashboard`) Active meal balance display and a secure 30-second rotating QR code for POS scanning.
 - [x] **Order History:** (`/dashboard/orders`) Read-only list of past Dine-In and Takeaway purchases.
 
-### Phase 3: Checkout & Payments (PENDING)
-- [ ] Cart Checkout UI and address collection.
-- [ ] Razorpay integration for processing paid orders and subscription purchases.
-- [ ] Webhook validation handling.
+### Phase 3: Checkout & Payments (✅ COMPLETED)
+- [x] Cart Checkout UI and address collection.
+- [x] Razorpay integration for processing paid orders and subscription purchases.
+- [x] Webhook validation handling.
 
-### Phase 4: Customer CRM & Loyalty (PENDING)
-- [ ] Notification feed (bell icon).
-- [ ] Digital Wallet top-up flow and balance rendering.
-- [ ] Loyalty points redemption integration into the checkout flow.
+### Phase 4: Customer CRM & Loyalty (✅ COMPLETED)
+- [x] Notification feed (bell icon).
+- [x] Digital Wallet top-up flow and balance rendering.
+- [x] Loyalty points redemption integration into the checkout flow.
