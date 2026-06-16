@@ -1,22 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Menu, User } from 'lucide-react';
+import { ShoppingCart, Menu, User, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuth';
-import { useCartStore } from '@/store/useCart';
 import { useParams } from 'next/navigation';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { CartDrawer } from '../cart/CartDrawer';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function Navbar() {
   const params = useParams();
   const tenantSlug = params.tenantSlug as string;
   const { isAuthenticated, logout } = useAuthStore();
-  const cartItemsCount = useCartStore((state) => state.totalItems());
 
   // If no tenantSlug in URL (e.g. at root or /auth), we might just show a generic brand or hide tenant links
   const brandName = tenantSlug ? tenantSlug.replace(/-/g, ' ').toUpperCase() : 'KWICKLY';
@@ -67,25 +74,40 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Right: Cart & Auth */}
+        {/* Right: Cart, Notifications & Auth */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCart className="h-5 w-5" />
-            {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
-                {cartItemsCount}
-              </span>
-            )}
-            <span className="sr-only">Cart</span>
-          </Button>
+          {tenantSlug && <CartDrawer tenantSlug={tenantSlug} />}
           
           {isAuthenticated ? (
-            <Link href="/dashboard">
-              <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 dark:bg-slate-800">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Dashboard</span>
-              </Button>
-            </Link>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="relative inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-10 w-10">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-red-600"></span>
+                  <span className="sr-only">Notifications</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                    <span className="font-medium text-sm">Plan Expiring Soon</span>
+                    <span className="text-xs text-muted-foreground">Your Pro Monthly Plan expires in 3 days. Renew now to keep enjoying meals!</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                    <span className="font-medium text-sm">Loyalty Points Earned</span>
+                    <span className="text-xs text-muted-foreground">You earned 50 points from your last dine-in order.</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Link href="/dashboard">
+                <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 dark:bg-slate-800">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Dashboard</span>
+                </Button>
+              </Link>
+            </>
           ) : (
             <Link href="/auth" className="hidden sm:inline-block">
               <Button variant="default">Login</Button>

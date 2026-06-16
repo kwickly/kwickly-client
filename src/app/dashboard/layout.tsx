@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, ReceiptText, QrCode } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, QrCode, Wallet } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -45,6 +45,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <Link href="/dashboard/orders" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">
             <ReceiptText className="h-5 w-5" /> Order History
+          </Link>
+          <Link href="/dashboard/wallet" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">
+            <Wallet className="h-5 w-5" /> Wallet & Loyalty
           </Link>
         </nav>
       </aside>
