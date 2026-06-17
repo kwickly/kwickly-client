@@ -71,3 +71,13 @@ kwickly-client/
 - [x] Notification feed (bell icon).
 - [x] Digital Wallet top-up flow and balance rendering.
 - [x] Loyalty points redemption integration into the checkout flow.
+
+### Phase 6: Notifications & Final Polish (✅ COMPLETED)
+- [x] Built `NotificationBell` component displaying mocked alerts.
+- [x] Added visual badge for unread counts using local Zustand state.
+- [x] Final QA sweep across all components for responsive rendering.
+
+### Phase 7: Automated Testing (⏳ PENDING)
+- [ ] Install `vitest` and `@testing-library/react`.
+- [ ] Write unit tests for Zustand Shopping Cart logic.
+- [ ] Verify test suite passes with 0 failures.
