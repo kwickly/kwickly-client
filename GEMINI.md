@@ -1,4 +1,4 @@
-# Kwickly Client - Agent Instructions (CLAUDE.md)
+# Kwickly Client - Agent Instructions (GEMINI.md)
 
 ## 1. Core Imperative: Review Documentation
 Before making significant architectural changes or creating new modules, you **MUST** read `docs/README.md` first to understand the project's historical progression, superseded decisions, and chronological timeline. Our docs are organized by domain and chronology.
