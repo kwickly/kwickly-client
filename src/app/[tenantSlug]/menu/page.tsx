@@ -27,8 +27,8 @@ async function getTenantMenu(slug: string) {
   return [];
 }
 
-export default async function TenantMenuPage({ params }: { params: { tenantSlug: string } }) {
-  const categories = await getTenantMenu(params.tenantSlug);
+export default async function TenantMenuPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
+  const categories = await getTenantMenu((await params).tenantSlug);
 
   if (!categories || categories.length === 0) {
     return (
@@ -41,7 +41,7 @@ export default async function TenantMenuPage({ params }: { params: { tenantSlug:
 
   return (
     <MenuClientView 
-      tenantSlug={params.tenantSlug} 
+      tenantSlug={(await params).tenantSlug} 
       categories={categories} 
     />
   );

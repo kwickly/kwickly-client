@@ -33,8 +33,8 @@ function hexToOklchString(hex: string) {
   return '0.51 0.2 260'; // Fallback
 }
 
-export async function generateMetadata({ params }: { params: { tenantSlug: string } }): Promise<Metadata> {
-  const branding = await getTenantBranding(params.tenantSlug);
+export async function generateMetadata({ params }: { params: Promise<{ tenantSlug: string }> }): Promise<Metadata> {
+  const branding = await getTenantBranding((await params).tenantSlug);
   return {
     title: branding.name,
     description: `Order online from ${branding.name}`,
@@ -46,9 +46,9 @@ export default async function TenantLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { tenantSlug: string };
+  params: Promise<{ tenantSlug: string }>;
 }) {
-  const branding = await getTenantBranding(params.tenantSlug);
+  const branding = await getTenantBranding((await params).tenantSlug);
   
   // We compute the OKLCH values to support Tailwind v4's format
   const primaryOklch = hexToOklchString(branding.brandColor);

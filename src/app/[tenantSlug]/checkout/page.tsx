@@ -11,7 +11,10 @@ import { Separator } from '@/components/ui/separator';
 import { MapPin, Store, CreditCard, Gift, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function CheckoutPage({ params }: { params: { tenantSlug: string } }) {
+import React from 'react';
+
+export default function CheckoutPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
+  const { tenantSlug } = React.use(params);
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
   const [diningMode, setDiningMode] = useState('takeaway');
@@ -28,7 +31,7 @@ export default function CheckoutPage({ params }: { params: { tenantSlug: string 
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
         <ShoppingCartIcon className="h-16 w-16 text-slate-300" />
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Button onClick={() => router.push(`/${params.tenantSlug}/menu`)}>Return to Menu</Button>
+        <Button onClick={() => router.push(`/${tenantSlug}/menu`)}>Return to Menu</Button>
       </div>
     );
   }
@@ -36,13 +39,40 @@ export default function CheckoutPage({ params }: { params: { tenantSlug: string 
   const handlePayment = async () => {
     setIsProcessing(true);
     
-    // Simulate Razorpay/Stripe checkout delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    setIsProcessing(false);
-    toast.success('Payment successful! Your order has been placed.');
-    clearCart();
-    router.push('/dashboard/orders');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
+      const orderPayload = {
+        branchId: 'default',
+        tableNumber: 'Table 12', // For now, hardcoded as in the UI
+        items: items.map((item) => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+        })),
+      };
+
+      const res = await fetch(`${apiUrl}/orders/public/${tenantSlug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to place order');
+      }
+
+      toast.success('Order sent to kitchen! Please pay at the counter.');
+      clearCart();
+      
+      // Redirect back to menu or an order tracking page
+      router.push(`/${tenantSlug}/menu`);
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
