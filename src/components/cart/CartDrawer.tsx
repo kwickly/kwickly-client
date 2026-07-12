@@ -103,7 +103,7 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
                 </div>
               </div>
               <SheetFooter>
-                <Link href={`/${tenantSlug}/checkout`} className="w-full">
+                <Link href="/checkout" className="w-full">
                   <Button className="w-full h-12 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/20">
                     Proceed to Checkout
                   </Button>

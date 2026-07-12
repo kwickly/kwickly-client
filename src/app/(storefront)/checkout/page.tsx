@@ -13,8 +13,11 @@ import { toast } from 'sonner';
 
 import React from 'react';
 
-export default function CheckoutPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
-  const { tenantSlug } = React.use(params);
+export default function CheckoutPage() {
+  const [tenantSlug, setTenantSlug] = useState('');
+  React.useEffect(() => {
+    setTenantSlug(window.location.hostname.split('.')[0]);
+  }, []);
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
   const [diningMode, setDiningMode] = useState('takeaway');
@@ -31,7 +34,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ tenantSlug:
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
         <ShoppingCartIcon className="h-16 w-16 text-slate-300" />
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Button onClick={() => router.push(`/${tenantSlug}/menu`)}>Return to Menu</Button>
+        <Button onClick={() => router.push(`/menu`)}>Return to Menu</Button>
       </div>
     );
   }
@@ -67,7 +70,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ tenantSlug:
       clearCart();
       
       // Redirect back to menu or an order tracking page
-      router.push(`/${tenantSlug}/menu`);
+      router.push(`/menu`);
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong');
     } finally {

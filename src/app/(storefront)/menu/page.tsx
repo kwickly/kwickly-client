@@ -1,5 +1,6 @@
 import React from 'react';
 import MenuClientView from './components/MenuClientView';
+import { headers } from 'next/headers';
 
 // Fetch the menu from the live API based on the tenant slug
 async function getTenantMenu(slug: string) {
@@ -27,8 +28,11 @@ async function getTenantMenu(slug: string) {
   return [];
 }
 
-export default async function TenantMenuPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
-  const categories = await getTenantMenu((await params).tenantSlug);
+export default async function TenantMenuPage() {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = host.split('.')[0];
+  const categories = await getTenantMenu(tenantSlug);
 
   if (!categories || categories.length === 0) {
     return (
@@ -41,7 +45,7 @@ export default async function TenantMenuPage({ params }: { params: Promise<{ ten
 
   return (
     <MenuClientView 
-      tenantSlug={(await params).tenantSlug} 
+      tenantSlug={tenantSlug} 
       categories={categories} 
     />
   );

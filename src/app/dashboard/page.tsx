@@ -21,8 +21,33 @@ export default function DashboardPage() {
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Hello, {user?.firstName || 'Guest'}</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Here is your active subscription and meal balance.</p>
+        <p className="text-muted-foreground mt-2 text-lg">Manage your digital wallet, loyalty points, and subscriptions.</p>
       </div>
+
+      {/* Wallet and Loyalty Overview */}
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card className="shadow-sm border-emerald-100 dark:border-emerald-900 bg-emerald-50/30 dark:bg-emerald-950/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold text-emerald-800 dark:text-emerald-400">Wallet Cash</CardTitle>
+            <CardDescription>Pre-paid fiat balance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-500">$45.50</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-sm border-amber-100 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold text-amber-800 dark:text-amber-400">Loyalty Points</CardTitle>
+            <CardDescription>Earned from orders (100 pts = $1)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-4xl font-extrabold text-amber-500">1,250 <span className="text-sm font-normal text-amber-700 dark:text-amber-300">pts</span></p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <h2 className="text-2xl font-bold tracking-tight pt-4">Active Subscriptions</h2>
 
       <div className="grid md:grid-cols-2 gap-8">
         <Card className="shadow-lg border-indigo-100 dark:border-indigo-900 overflow-hidden relative">

@@ -1,63 +1,91 @@
 # Kwickly Client App: Customer Web & White-Labeling Architecture
 
-The `kwickly-client` repository serves as the end-user (customer) interface for restaurant guests. This document outlines the architectural plan for tenant routing, white-labeling, and branding injection, adhering to modern Next.js and industry best practices.
+## Status: ✅ Implemented (2026-07-12)
 
-## 1. Access Strategy (Domain Routing & Context)
+The `kwickly-client` serves as the end-user (customer) interface for restaurant guests. This document describes the **implemented** architecture for tenant routing, white-labeling, and branding injection.
 
-To support thousands of tenants seamlessly from a single Next.js application, we will adopt the **Multi-Tenant Platforms Architecture** (popularized by Vercel).
+---
 
-### Next.js Middleware Routing
-Customers need seamless access to the restaurant's menu and ordering system. We will intercept all incoming requests using Next.js Middleware (`middleware.ts`).
+## 1. Access Strategy — Native Subdomain Routing via HTTP Host Header
 
-- **Subdomain Routing:** Requests to `[tenant-slug].kwickly.app` will be rewritten internally to `/app/[tenant-slug]`.
-- **Custom Domain Routing:** If a restaurant brings their own domain (e.g., `ordernow.swamys.com`), the middleware will lookup the custom domain and rewrite to the corresponding tenant slug.
-- **QR Code Context (Table/Branch):** When a user scans a physical QR code at a table, the URL will include context parameters. 
-  - *Example URL:* `https://swamys.kwickly.app/branch/[branch-id]/table/[table-no]`
-  - The middleware will parse the subdomain (`swamys`) and rewrite it to `/app/swamys/branch/[branch-id]/table/[table-no]`. This allows the server components to immediately know *Who* the tenant is, *Where* the branch is, and *What* table the user is sitting at.
+### Decision: No Middleware Rewrites
 
-## 2. White-Labeling & Branding Strategy
+We explored Next.js Middleware-based URL rewriting (`[tenantSlug]` path parameter approach) and **rejected it** in favour of a cleaner, more scalable pattern.
 
-Our goal is to make the app feel like a native, custom-built application for each restaurant. We will leverage the existing `tenantBrandings` table.
+**Final Architecture:** The storefront lives in a Next.js Route Group `src/app/(storefront)/`. Pages and layouts in this group use the `next/headers` API to read the incoming `host` header directly on the server:
 
-### Dynamic CSS Variable Injection (Theming)
-We cannot pre-compile Tailwind classes for every tenant's hex code. Instead, we will use **Dynamic CSS Variables**.
+```ts
+import { headers } from 'next/headers';
 
-1. **Server-Side Fetching:** The root layout `app/[tenant-slug]/layout.tsx` will fetch the tenant's branding data from the Kwickly API (cached aggressively in Redis).
-2. **Style Injection:** We will inject a `<style>` block directly into the `<head>`.
-   ```html
-   <style>
-     :root {
-       --primary-brand: <converted-hsl-or-oklch-from-hex>;
-       --font-sans: "<tenant-font>", sans-serif;
-     }
-   </style>
-   ```
-3. **Tailwind Config:** The `tailwind.config.ts` will map `colors.primary` to `var(--primary-brand)`. This ensures that all UI components (buttons, badges, active states) automatically inherit the tenant's exact brand color with full opacity-modifier support.
+export default async function TenantLayout({ children }) {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = host.split('.')[0]; // e.g. "swamy" from "swamy.kwickly.in"
+  
+  const branding = await getTenantBranding(tenantSlug);
+  // inject OKLCH CSS variables, set metadata...
+}
+```
 
-### Dynamic Assets & Metadata
-- **Logos & Favicons:** The `layout.tsx` will dynamically set the `<title>` and inject `<link rel="icon">` using the `faviconUrl`. 
-- **Watermark:** Based on the `hideKwicklyBranding` flag (from higher pricing tiers), the "Powered by Kwickly" footer will be hidden.
+**Benefits over middleware rewrites:**
+- No `[tenantSlug]` leaking into every URL path — links stay clean (`/menu`, `/checkout`, `/plans`)
+- No `middleware.ts` added to the Edge bundle — better cold-start performance
+- Zero-config: subdomain `swamy.kwickly.in` automatically resolves to the same deployment as `punjabi-chuska.kwickly.in`
 
-## 3. Progressive Web App (PWA) Capabilities
+### Wildcard DNS Setup (Production)
+- Set a wildcard A record: `*.kwickly.in → <server-ip>` (single DNS entry)
+- The Next.js deployment (on Vercel, Cloudflare Pages, or VPS) receives all traffic
+- Each restaurant identified purely by the `host` header — no separate deployments
 
-A core feature for regular customers is the ability to install the restaurant's app on their phone without going to the App Store.
+### Local Development
+Since `localhost` has no subdomain, Chrome/Safari/Edge automatically route `*.localhost` to `127.0.0.1`:
+```
+http://swamy.localhost:3000       →  tenant = "swamy"
+http://punjabi-chuska.localhost:3000  →  tenant = "punjabi-chuska"
+```
 
-- **Dynamic Manifest Route:** We will create a Next.js API route `/manifest.json` (or route handler) that dynamically generates the Web App Manifest based on the `customPwaManifest` JSON in the database. 
-- When a user visits `swamys.kwickly.app`, they can tap "Add to Home Screen". The icon and app name on their phone will belong to Swamy's, not Kwickly.
+---
 
-## 4. Performance & Caching
+## 2. White-Labeling & Dynamic Branding
 
-- **Redis Caching:** The API endpoint that serves the `TenantBranding` payload must be heavily cached. A cache invalidation event will fire only when the tenant updates their branding via the Admin Web Dashboard.
-- **Image Optimization:** Tenant logos will be served via Next.js `<Image>` component for automatic WebP conversion and optimization.
+Each tenant's brand color (hex) is stored in the `tenantBrandings` table. At request time:
 
-## Open Questions
+1. `(storefront)/layout.tsx` fetches branding via `GET /v1/auth/branding?hostname={slug}`
+2. The hex is converted to OKLCH format (Tailwind v4 native)
+3. A `<style>` block is injected into `<head>` to override CSS variables:
 
-> [!IMPORTANT]
-> **Domain Resolution Strategy:** How are we handling the DNS layer for custom domains? Are we using Vercel/Cloudflare custom domains API to programmatically provision SSL certificates when a tenant adds a custom domain?
+```html
+<style>
+  .tenant-wrapper {
+    --primary: oklch(0.51 0.2 260);     /* tenant brand colour */
+    --primary-foreground: oklch(0.985 0 0); /* auto white foreground */
+  }
+</style>
+```
 
-> [!WARNING]
-> **Authentication Scope:** Do we want customer accounts to be "Global" across all Kwickly restaurants, or "Isolated" per tenant? (Industry standard usually leans towards global auth for ease of use, but isolated profiles per restaurant).
+All Shadcn/Base UI components inherit `--primary` automatically — buttons, badges, focus rings, etc.
 
-## User Review Required
+### Metadata & SEO
+`generateMetadata()` in `layout.tsx` dynamically sets the page `<title>` and `<meta description>` using the tenant's name fetched from the API.
 
-Does this routing and dynamic CSS injection strategy align with your vision for the white-labeled end-user experience? Once approved, we will formalize this into an ADR and proceed with scaffolding the Client repository.
+### Future: PWA Manifest
+A Next.js Route Handler at `/manifest.json` can dynamically generate the Web App Manifest from the `customPwaManifest` JSONB column in the DB, enabling "Add to Home Screen" with the restaurant's own icon and name.
+
+---
+
+## 3. Custom Domains (Future)
+
+The `tenantBrandings` table already has a `custom_domain` column. To support `ordernow.swamys.com`:
+1. Tenant enters their domain in the Admin Dashboard
+2. A Cloudflare/Vercel API call provisions a wildcard SSL certificate
+3. No code changes needed — the same host-header logic handles it
+
+---
+
+## 4. Scalability
+
+Because this is a stateless serverless/edge deployment:
+- **Zero per-tenant infrastructure** — one codebase, one deployment, N tenants
+- **Edge caching** — menu data cached at CDN for 60s; branding cached for 1hr
+- **Auto-scaling** — serverless provider spins instances based on traffic, not tenant count
+- **No traffic bottleneck** — same model as Shopify, Substack, and Vercel's own multi-tenant architecture

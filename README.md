@@ -6,18 +6,20 @@ This application serves as the primary endpoint for end-customers to browse live
 
 ## Key Features
 
-- **Multi-Tenant Routing:** Fully dynamic URL structures (`/[tenantSlug]`) allow a single codebase to serve menus and branding for thousands of independent restaurants.
+- **Multi-Tenant Wildcard Subdomains:** A single Next.js deployment serves thousands of independent restaurant brands. Tenant identification is done natively by reading the HTTP `host` header in server components — no middleware rewriting, no URL slugs. Each tenant gets their own subdomain (e.g., `swamy.kwickly.in`, `punjabi-chuska.kwickly.in`).
 - **Live Menu & Cart:** Fast, responsive menu browsing using TanStack Query for background caching and Zustand for local cart management.
-- **OTP Authentication:** Secure passwordless login flow.
-- **Subscriber Dashboard:** Customers can view their real-time meal balance and present a secure, refreshing QR code to the cashier.
+- **Authentication & Guest Checkout:** Secure Email/Password login flow with support for POS-registered email linking (customers can be registered at the counter by the cashier).
+- **Omnichannel Digital Wallet:** A closed-loop ledger displaying both pre-paid fiat balance (Wallet Cash) and earned loyalty points (CRM). Customers can convert points to cash based on tenant settings.
+- **Subscriber Dashboard:** Customers can view their active offline subscriptions, track real-time meal balances, and present a secure, refreshing QR code to the cashier.
+- **Dynamic White-Labeling:** The `(storefront)/layout.tsx` fetches tenant branding from the API and injects CSS OKLCH variables at runtime, giving every restaurant its own colour theme, logo, and PWA icon without a separate deployment.
 - **Robust API Client:** Advanced Axios interceptors that automatically manage JWT injection and silent token refreshing on `401 Unauthorized` responses.
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
+- **Framework:** Next.js 16 (App Router, Turbopack)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS v4
-- **Components:** Shadcn UI (Radix / Base UI)
+- **Components:** Shadcn UI (Base UI)
 - **State Management:** Zustand (Client), TanStack React Query (Server)
 - **HTTP Client:** Axios
 
@@ -35,17 +37,37 @@ Start the development server:
 bun run dev
 ```
 
-Open [http://localhost:3000/swamy-hot-foods](http://localhost:3000/swamy-hot-foods) in your browser to view the dynamic storefront demo.
+### Local Subdomain Testing
+
+Since `localhost` has no subdomain, use the following pattern to simulate a tenant:
+
+```
+http://swamy.localhost:3000
+```
+
+Chrome, Safari and Edge all automatically route `*.localhost` to `127.0.0.1`. The app will read `swamy` from the `host` header and fetch the corresponding branding and menu.
 
 ## Project Structure
 
-- `/src/app/[tenantSlug]` - The dynamic public storefront (Menu, Landing, Plans).
-- `/src/app/auth` - The OTP login screens.
-- `/src/app/dashboard` - Protected customer portal routes.
-- `/src/components/ui` - Reusable Shadcn primitives.
-- `/src/store` - Zustand global state managers (`useAuth`, `useCart`).
-- `/src/lib` - Core utilities like the Axios `api.ts` client.
+```
+src/
+├── app/
+│   ├── (storefront)/   # Public tenant storefront (route group, served from root)
+│   │   ├── layout.tsx  # Fetches branding via host header, injects CSS vars
+│   │   ├── page.tsx    # Tenant landing / hero page
+│   │   ├── menu/       # Live menu browser
+│   │   ├── plans/      # Subscription plan listing
+│   │   └── checkout/   # Order checkout
+│   ├── auth/           # Email/password login & registration
+│   └── dashboard/      # Protected customer portal (orders, wallet, subscriptions)
+├── components/
+│   ├── ui/             # Shadcn primitives (Base UI)
+│   ├── layout/         # Navbar, footer, shell
+│   └── cart/           # CartDrawer
+├── store/              # Zustand stores (useAuth, useCart)
+└── lib/                # Axios API client with JWT interceptors
+```
 
 ## Documentation
 
-For a detailed implementation tracker and architectural context, please refer to the internal documentation at [`docs/project-context.md`](./docs/project-context.md).
+Internal architecture docs are maintained under [`docs/`](./docs/README.md).

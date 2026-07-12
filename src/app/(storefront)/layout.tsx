@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 
 // Fetch branding from the live API based on the tenant slug
 async function getTenantBranding(slug: string) {
@@ -33,8 +34,12 @@ function hexToOklchString(hex: string) {
   return '0.51 0.2 260'; // Fallback
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ tenantSlug: string }> }): Promise<Metadata> {
-  const branding = await getTenantBranding((await params).tenantSlug);
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = host.split('.')[0];
+  
+  const branding = await getTenantBranding(tenantSlug);
   return {
     title: branding.name,
     description: `Order online from ${branding.name}`,
@@ -43,12 +48,14 @@ export async function generateMetadata({ params }: { params: Promise<{ tenantSlu
 
 export default async function TenantLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ tenantSlug: string }>;
 }) {
-  const branding = await getTenantBranding((await params).tenantSlug);
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = host.split('.')[0];
+
+  const branding = await getTenantBranding(tenantSlug);
   
   // We compute the OKLCH values to support Tailwind v4's format
   const primaryOklch = hexToOklchString(branding.brandColor);

@@ -42,9 +42,9 @@ export function Navbar() {
               <nav className="flex flex-col gap-4 mt-8">
                 {tenantSlug && (
                   <>
-                    <Link href={`/${tenantSlug}`} className="block px-2 py-1 text-lg font-medium">Home</Link>
-                    <Link href={`/${tenantSlug}/menu`} className="block px-2 py-1 text-lg font-medium">Menu</Link>
-                    <Link href={`/${tenantSlug}/plans`} className="block px-2 py-1 text-lg font-medium">Subscription Plans</Link>
+                    <Link href="/" className="block px-2 py-1 text-lg font-medium">Home</Link>
+                    <Link href="/menu" className="block px-2 py-1 text-lg font-medium">Menu</Link>
+                    <Link href="/plans" className="block px-2 py-1 text-lg font-medium">Subscription Plans</Link>
                   </>
                 )}
                 {isAuthenticated ? (
@@ -59,7 +59,7 @@ export function Navbar() {
             </SheetContent>
           </Sheet>
 
-          <Link href={tenantSlug ? `/${tenantSlug}` : '/'} className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <span className="font-bold text-xl tracking-tight hidden sm:inline-block">
               {brandName}
             </span>
@@ -68,8 +68,8 @@ export function Navbar() {
           {/* Desktop Nav */}
           {tenantSlug && (
             <nav className="hidden md:flex gap-6 ml-6">
-              <Link href={`/${tenantSlug}/menu`} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Menu</Link>
-              <Link href={`/${tenantSlug}/plans`} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Plans</Link>
+              <Link href="/menu" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Menu</Link>
+              <Link href="/plans" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Plans</Link>
             </nav>
           )}
         </div>

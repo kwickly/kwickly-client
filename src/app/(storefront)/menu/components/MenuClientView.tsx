@@ -8,6 +8,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Minus, Plus, Search, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useCartStore } from '@/store/useCart';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 export default function MenuClientView({ 
   tenantSlug, 
@@ -155,13 +158,64 @@ export default function MenuClientView({
       {totalItems > 0 && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-950 dark:via-slate-950/95 pb-8 pt-12 animate-in slide-in-from-bottom-10">
           <div className="max-w-md mx-auto">
-            <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-medium shadow-xl shadow-primary/20 flex justify-between px-6">
-              <div className="flex items-center">
-                <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold mr-3">{totalItems} items</span>
-                View Order
-              </div>
-              <span>${totalPrice.toFixed(2)}</span>
-            </Button>
+            <Sheet>
+              <SheetTrigger render={
+                <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-medium shadow-xl shadow-primary/20 flex justify-between px-6">
+                  <div className="flex items-center">
+                    <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold mr-3">{totalItems} items</span>
+                    View Order
+                  </div>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </Button>
+              } />
+              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl bg-white dark:bg-slate-950 px-0 sm:max-w-md mx-auto">
+                <SheetHeader className="px-6 py-4">
+                  <SheetTitle className="text-2xl font-bold">Your Order</SheetTitle>
+                </SheetHeader>
+                <Separator />
+                <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-900 dark:text-white">{item.name}</h4>
+                        <p className="text-primary font-medium">${item.price.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button onClick={() => {
+                          const q = getQuantity(item.id);
+                          if (q > 1) cartStore.updateQuantity(item.id, q - 1);
+                          else cartStore.removeItem(item.id);
+                        }} variant="outline" size="icon" className="h-8 w-8 rounded-full border-slate-200 dark:border-slate-700">
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="font-medium text-sm w-4 text-center">{getQuantity(item.id)}</span>
+                        <Button 
+                          onClick={() => {
+                            const q = getQuantity(item.id);
+                            cartStore.updateQuantity(item.id, q + 1);
+                          }} 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-6 bg-slate-50 dark:bg-slate-900 absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-500 font-medium">Subtotal</span>
+                    <span className="font-bold text-lg">${totalPrice.toFixed(2)}</span>
+                  </div>
+                  <Link href="/checkout" className="w-full">
+                    <Button className="w-full h-14 rounded-2xl text-lg shadow-xl shadow-primary/20">
+                      Checkout
+                    </Button>
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       )}

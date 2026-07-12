@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Utensils, CalendarDays } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default async function TenantLandingPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
-  const { tenantSlug } = await params;
+import { headers } from 'next/headers';
+
+export default async function TenantLandingPage() {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = host.split('.')[0];
   const brandName = tenantSlug.replace(/-/g, ' ').toUpperCase();
 
   return (
@@ -21,12 +25,12 @@ export default async function TenantLandingPage({ params }: { params: Promise<{ 
             Order fresh meals instantly or subscribe to our exclusive meal plans for daily convenience.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
-            <Link href={`/${tenantSlug}/menu`}>
+            <Link href="/menu">
               <Button size="lg" className="h-14 px-8 text-lg font-semibold w-full sm:w-auto shadow-xl shadow-indigo-500/20">
                 Order Now <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href={`/${tenantSlug}/plans`}>
+            <Link href="/plans">
               <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold w-full sm:w-auto">
                 View Meal Plans
               </Button>
