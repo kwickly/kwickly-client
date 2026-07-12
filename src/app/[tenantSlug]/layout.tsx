@@ -1,17 +1,26 @@
 import React from 'react';
 import type { Metadata } from 'next';
 
-// In a real app, this would be fetched from the Kwickly API using the tenantSlug
+// Fetch branding from the live API based on the tenant slug
 async function getTenantBranding(slug: string) {
-  // Mock fallback
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
+    const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`, {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    const data = await res.json();
+    if (data.success && data.tenantResult?.length > 0) {
+      return data.tenantResult[0];
+    }
+  } catch (error) {
+    console.error('Failed to fetch tenant branding:', error);
+  }
+  
+  // Fallback if network fails
   return {
     brandColor: '#4f46e5', // Indigo-600
-    themeConfig: {
-      fonts: {
-        sans: 'Inter',
-      }
-    },
-    name: 'Kwickly',
+    themeMode: 'light',
+    name: 'Kwickly (Fallback)',
   };
 }
 
@@ -52,7 +61,7 @@ export default async function TenantLayout({
             .tenant-wrapper {
               --primary: oklch(${primaryOklch});
               --primary-foreground: oklch(0.985 0 0); /* White foreground for contrast */
-              --font-sans: '${branding.themeConfig.fonts.sans}', sans-serif;
+              --font-sans: 'Inter', sans-serif;
             }
           `
         }} />
