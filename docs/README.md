@@ -10,9 +10,12 @@ Deprecated or superseded decisions are moved to the `archive/` folder.
 ### 🏛️ Architecture & Infrastructure
 - [2026-06-17: Project Context](architecture-and-infrastructure/2026-06-17-project-context/project-context.md)
 - [2026-07-12: White-Labeling Architecture](architecture-and-infrastructure/2026-07-12-white-labeling-architecture/white-labeling-architecture.md)
+- [2026-07-16: API Client Integration](architecture-and-infrastructure/2026-07-16-api-client-integration/api-client-integration.md)
+- [2026-07-16: Progressive Web App Configuration](architecture-and-infrastructure/2026-07-16-pwa-configuration/pwa-configuration.md)
 
 ### 🧪 Testing & QA
 - [2026-06-17: Testing Progress](testing-and-qa/2026-06-17-testing-progress/testing-progress.md)
+- [2026-07-16: End-to-End Testing Strategy](testing-and-qa/2026-07-16-e2e-testing-strategy/e2e-testing-strategy.md)
 
 ### 📦 Archive
 *(Superseded or deprecated decisions live in `docs/archive/`)*
