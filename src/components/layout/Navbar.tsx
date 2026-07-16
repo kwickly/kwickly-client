@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { CartDrawer } from '../cart/CartDrawer';
+import { PushNotificationToggle } from '@/components/ui/PushNotificationToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,6 +81,7 @@ export function Navbar() {
           
           {isAuthenticated ? (
             <>
+              <PushNotificationToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger className="relative inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-10 w-10">
                   <Bell className="h-5 w-5" />
