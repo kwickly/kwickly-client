@@ -5,16 +5,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { QrCode, Clock, Utensils } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getTenantSlug } from '@/lib/tenant-helper';
+import { formatCurrency } from '@/lib/currency';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const [totpCountdown, setTotpCountdown] = useState(30);
+  const [baseCurrency, setBaseCurrency] = useState('INR');
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTotpCountdown(prev => (prev === 1 ? 30 : prev - 1));
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const slug = getTenantSlug(window.location.host) || 'kwickly';
+    const fetchBranding = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`);
+        const data = await res.json();
+        if (data.success && data.branding) {
+          setBaseCurrency(data.branding.baseCurrency || 'INR');
+        }
+      } catch (err) {
+        console.error('Failed to load base currency for dashboard:', err);
+      }
+    };
+    fetchBranding();
   }, []);
 
   return (
@@ -32,14 +52,14 @@ export default function DashboardPage() {
             <CardDescription>Pre-paid fiat balance</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-500">$45.50</p>
+            <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-500">{formatCurrency(45.50, baseCurrency)}</p>
           </CardContent>
         </Card>
         
         <Card className="shadow-sm border-amber-100 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold text-amber-800 dark:text-amber-400">Loyalty Points</CardTitle>
-            <CardDescription>Earned from orders (100 pts = $1)</CardDescription>
+            <CardDescription>Earned from orders (100 pts = {formatCurrency(1, baseCurrency)})</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-extrabold text-amber-500">1,250 <span className="text-sm font-normal text-amber-700 dark:text-amber-300">pts</span></p>

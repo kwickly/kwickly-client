@@ -1,17 +1,19 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getTenantSlug } from '@/lib/tenant-helper';
+import { hexToOklchString } from '@/lib/color-utils';
 
 // Fetch branding from the live API based on the tenant slug
 async function getTenantBranding(slug: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
     });
     const data = await res.json();
-    if (data.success && data.tenantResult?.length > 0) {
-      return data.tenantResult[0];
+    if (data.success && data.branding) {
+      return data.branding;
     }
   } catch (error) {
     console.error('Failed to fetch tenant branding:', error);
@@ -22,22 +24,15 @@ async function getTenantBranding(slug: string) {
     brandColor: '#4f46e5', // Indigo-600
     themeMode: 'light',
     name: 'Kwickly (Fallback)',
+    baseCurrency: 'INR',
+    enabledModules: { dineIn: true, takeaway: true, delivery: true, subscriptions: true }
   };
-}
-
-// Convert HEX to HSL format suitable for Tailwind CSS variables (e.g., "226 76% 60%")
-// Real implementation would use a utility like 'color-convert' or a custom hex-to-hsl function
-function hexToOklchString(hex: string) {
-  // Mock conversion for #4f46e5 (Indigo)
-  if (hex === '#4f46e5') return '0.51 0.2 260';
-  if (hex === '#ef4444') return '0.62 0.2 25'; // Red example
-  return '0.51 0.2 260'; // Fallback
 }
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const host = headersList.get('host') || '';
-  const tenantSlug = host.split('.')[0];
+  const tenantSlug = getTenantSlug(host) || 'kwickly';
   
   const branding = await getTenantBranding(tenantSlug);
   return {
@@ -53,26 +48,24 @@ export default async function TenantLayout({
 }) {
   const headersList = await headers();
   const host = headersList.get('host') || '';
-  const tenantSlug = host.split('.')[0];
+  const tenantSlug = getTenantSlug(host) || 'kwickly';
 
   const branding = await getTenantBranding(tenantSlug);
   
   // We compute the OKLCH values to support Tailwind v4's format
-  const primaryOklch = hexToOklchString(branding.brandColor);
+  const primaryOklch = hexToOklchString(branding.brandColor || '#4f46e5');
 
   return (
     <>
-      <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            .tenant-wrapper {
-              --primary: oklch(${primaryOklch});
-              --primary-foreground: oklch(0.985 0 0); /* White foreground for contrast */
-              --font-sans: 'Inter', sans-serif;
-            }
-          `
-        }} />
-      </head>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .tenant-wrapper {
+            --primary: oklch(${primaryOklch});
+            --primary-foreground: oklch(0.985 0 0); /* White foreground for contrast */
+            --font-sans: 'Inter', sans-serif;
+          }
+        `
+      }} />
       {/* 
         By rendering children here, we ensure everything inside this tenant's 
         routing tree inherits these CSS variables.

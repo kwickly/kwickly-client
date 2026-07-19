@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, Info } from 'lucide-react';
+import { getTenantSlug } from '@/lib/tenant-helper';
+import { formatCurrency } from '@/lib/currency';
 
 const MOCK_PLANS = [
   {
@@ -26,6 +29,25 @@ const MOCK_PLANS = [
 ];
 
 export default function PlansPage() {
+  const [baseCurrency, setBaseCurrency] = useState('INR');
+
+  useEffect(() => {
+    const slug = getTenantSlug(window.location.host) || 'kwickly';
+    const fetchBranding = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`);
+        const data = await res.json();
+        if (data.success && data.branding) {
+          setBaseCurrency(data.branding.baseCurrency || 'INR');
+        }
+      } catch (err) {
+        console.error('Failed to load base currency for subscription plans:', err);
+      }
+    };
+    fetchBranding();
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="text-center mb-16 space-y-4">
@@ -37,10 +59,10 @@ export default function PlansPage() {
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {MOCK_PLANS.map((plan) => (
-          <Card key={plan.id} className={`relative flex flex-col ${plan.popular ? 'border-indigo-600 shadow-indigo-500/10 shadow-2xl' : 'shadow-lg border-slate-200 dark:border-slate-800'}`}>
+          <Card key={plan.id} className={`relative flex flex-col ${plan.popular ? 'border-primary shadow-primary/10 shadow-2xl' : 'shadow-lg border-slate-200 dark:border-slate-800'}`}>
             {plan.popular && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   Most Popular
                 </span>
               </div>
@@ -49,10 +71,10 @@ export default function PlansPage() {
               <CardTitle className="text-2xl">{plan.name}</CardTitle>
               <CardDescription className="text-md mt-2 font-medium text-slate-600 dark:text-slate-400">{plan.type}</CardDescription>
               <div className="mt-4 flex justify-center items-baseline text-5xl font-extrabold">
-                ${plan.price.toFixed(2)}
+                {formatCurrency(plan.price, baseCurrency)}
               </div>
               <p className="text-sm text-muted-foreground mt-2 font-medium">
-                ${(plan.price / plan.meals).toFixed(2)} per meal
+                {formatCurrency(plan.price / plan.meals, baseCurrency)} per meal
               </p>
             </CardHeader>
             <CardContent className="flex-1 mt-6">
@@ -84,7 +106,7 @@ export default function PlansPage() {
 
       <div className="mt-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Info className="h-4 w-4" />
-        <p>Subscriptions are billed securely via Razorpay. Pause or cancel anytime.</p>
+        <p>Subscriptions are billed securely via Stripe/Razorpay. Pause or cancel anytime.</p>
       </div>
     </div>
   );

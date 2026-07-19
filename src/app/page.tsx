@@ -1,29 +1,55 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { headers } from 'next/headers';
+import { getTenantSlug } from '@/lib/tenant-helper';
+import { TenantLandingView } from '@/components/layout/TenantLandingView';
+import { PlatformLandingView } from '@/components/layout/PlatformLandingView';
 
-export default function Home() {
+async function getTenantBranding(slug: string) {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`, {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    const data = await res.json();
+    
+    if (data.success && data.branding) {
+      return {
+        brandColor: data.branding.brandColor || '#4f46e5',
+        baseCurrency: data.branding.baseCurrency || 'INR',
+        name: data.branding.name || slug.replace(/-/g, ' ').toUpperCase(),
+        enabledModules: data.branding.enabledModules || { dineIn: true, takeaway: false, delivery: false, subscriptions: false }
+      };
+    }
+  } catch (error) {
+    console.error('Failed to fetch tenant branding:', error);
+  }
+  
+  // Fallback
+  return {
+    brandColor: '#4f46e5',
+    baseCurrency: 'INR',
+    name: slug.replace(/-/g, ' ').toUpperCase(),
+    enabledModules: { dineIn: true, takeaway: true, delivery: true, subscriptions: true }
+  };
+}
+
+export default async function Home() {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const tenantSlug = getTenantSlug(host);
+
+  if (!tenantSlug) {
+    return <PlatformLandingView />;
+  }
+
+  const branding = await getTenantBranding(tenantSlug);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 text-center bg-slate-50 dark:bg-slate-950">
-      <div className="max-w-xl space-y-8">
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Welcome to <span className="text-indigo-600">Kwickly</span>
-        </h1>
-        <p className="text-lg text-slate-600 dark:text-slate-400">
-          The all-in-one ordering and subscription platform for modern restaurants. Please visit your restaurant's specific URL to place an order or view plans.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link href="/swamy-hot-foods">
-            <Button size="lg" className="w-full sm:w-auto font-semibold">
-              Visit Demo Restaurant
-            </Button>
-          </Link>
-          <Link href="/auth">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto font-semibold">
-              Customer Login
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
+    <TenantLandingView 
+      tenantSlug={tenantSlug} 
+      brandName={branding.name} 
+      brandColor={branding.brandColor}
+      baseCurrency={branding.baseCurrency}
+      enabledModules={branding.enabledModules}
+    />
   );
 }

@@ -9,14 +9,20 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-  SheetClose,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useCartStore } from '@/store/useCart';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/currency';
 
-export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
+export function CartDrawer({ 
+  tenantSlug,
+  baseCurrency = "INR"
+}: { 
+  tenantSlug: string;
+  baseCurrency?: string;
+}) {
   const { items, totalItems, totalPrice, updateQuantity, removeItem } = useCartStore();
   const itemCount = totalItems();
   const total = totalPrice();
@@ -26,7 +32,7 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
       <SheetTrigger className="relative inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-10 w-10">
         <ShoppingCart className="h-5 w-5" />
         {itemCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
             {itemCount}
           </span>
         )}
@@ -35,7 +41,7 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
       <SheetContent className="w-full sm:max-w-md flex flex-col">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-xl font-bold">
-            <ShoppingCart className="h-5 w-5" /> Your Order
+            <ShoppingCart className="h-5 w-5 text-primary" /> Your Order
           </SheetTitle>
         </SheetHeader>
         
@@ -55,7 +61,7 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="flex-1">
                       <h4 className="font-semibold text-base">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground font-mono">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{formatCurrency(item.price, baseCurrency)}</p>
                     </div>
                     
                     <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
@@ -79,7 +85,7 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
                     </div>
                     
                     <div className="w-16 text-right font-semibold font-mono">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatCurrency(item.price * item.quantity, baseCurrency)}
                     </div>
                   </div>
                 ))}
@@ -91,24 +97,24 @@ export function CartDrawer({ tenantSlug }: { tenantSlug: string }) {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-mono">${total.toFixed(2)}</span>
+                  <span className="font-mono">{formatCurrency(total, baseCurrency)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Taxes</span>
-                  <span className="font-mono">${(total * 0.08).toFixed(2)}</span>
+                  <span className="font-mono">{formatCurrency(total * 0.08, baseCurrency)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2">
                   <span>Total</span>
-                  <span className="font-mono">${(total * 1.08).toFixed(2)}</span>
+                  <span className="font-mono">{formatCurrency(total * 1.08, baseCurrency)}</span>
                 </div>
               </div>
-              <SheetFooter>
+              <div className="pt-4">
                 <Link href="/checkout" className="w-full">
-                  <Button className="w-full h-12 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/20">
+                  <Button className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/95 text-primary-foreground shadow-xl shadow-primary/20">
                     Proceed to Checkout
                   </Button>
                 </Link>
-              </SheetFooter>
+              </div>
             </div>
           </>
         )}

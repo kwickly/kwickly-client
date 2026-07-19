@@ -1,36 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wallet, Star, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getTenantSlug } from '@/lib/tenant-helper';
+import { formatCurrency } from '@/lib/currency';
 
 export default function WalletPage() {
   const [balance, setBalance] = useState(25.00);
   const [isProcessing, setIsProcessing] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState('50');
+  const [baseCurrency, setBaseCurrency] = useState('INR');
+
+  useEffect(() => {
+    const slug = getTenantSlug(window.location.host) || 'kwickly';
+    const fetchBranding = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        const res = await fetch(`${apiUrl}/auth/branding?hostname=${slug}`);
+        const data = await res.json();
+        if (data.success && data.branding) {
+          setBaseCurrency(data.branding.baseCurrency || 'INR');
+          // Adjust default topup amount based on currency
+          setTopUpAmount(data.branding.baseCurrency === 'USD' ? '25' : '200');
+        }
+      } catch (err) {
+        console.error('Failed to load base currency for wallet page:', err);
+      }
+    };
+    fetchBranding();
+  }, []);
 
   const loyaltyPoints = 450;
   const loyaltyTier = 'Silver';
   
   const handleTopUp = async () => {
     const amount = parseFloat(topUpAmount);
-    if (isNaN(amount) || amount < 10) {
-      toast.error('Minimum top-up amount is $10');
+    const minAmount = baseCurrency === 'USD' ? 5 : 100;
+    if (isNaN(amount) || amount < minAmount) {
+      toast.error(`Minimum top-up amount is ${formatCurrency(minAmount, baseCurrency)}`);
       return;
     }
 
     setIsProcessing(true);
-    // Simulate Razorpay topup
+    // Simulate Razorpay/Stripe topup
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
     setBalance(prev => prev + amount);
     setIsProcessing(false);
-    toast.success(`Successfully added $${amount.toFixed(2)} to your wallet!`);
+    toast.success(`Successfully added ${formatCurrency(amount, baseCurrency)} to your wallet!`);
   };
+
+  const quickAmounts = baseCurrency === 'USD' ? [10, 25, 50] : [100, 200, 500];
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -51,20 +76,20 @@ export default function WalletPage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-6">
               <span className="text-sm font-medium text-muted-foreground mb-2">Available Balance</span>
-              <span className="text-5xl font-bold tracking-tight font-mono">${balance.toFixed(2)}</span>
+              <span className="text-5xl font-bold tracking-tight font-mono">{formatCurrency(balance, baseCurrency)}</span>
             </div>
 
             <div className="space-y-4 mt-6">
               <div className="space-y-2">
                 <Label>Quick Top-up</Label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[25, 50, 100].map(amt => (
+                  {quickAmounts.map(amt => (
                     <Button 
                       key={amt} 
                       variant={topUpAmount === amt.toString() ? 'default' : 'outline'}
                       onClick={() => setTopUpAmount(amt.toString())}
                     >
-                      ${amt}
+                      {formatCurrency(amt, baseCurrency).replace(/\.00$/, '')}
                     </Button>
                   ))}
                 </div>
@@ -72,13 +97,13 @@ export default function WalletPage() {
               <div className="space-y-2">
                 <Label>Custom Amount</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-medium">$</span>
+                  <span className="text-xl font-medium">{baseCurrency === 'USD' ? '$' : '₹'}</span>
                   <Input 
                     type="number" 
                     value={topUpAmount} 
                     onChange={(e) => setTopUpAmount(e.target.value)}
                     className="text-lg font-mono"
-                    min="10"
+                    min={baseCurrency === 'USD' ? '5' : '100'}
                   />
                 </div>
               </div>
@@ -128,7 +153,7 @@ export default function WalletPage() {
             </div>
             
             <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-100 dark:border-amber-900/50 text-sm text-amber-800 dark:text-amber-200">
-              <span className="font-semibold block mb-1">Value: $4.50</span>
+              <span className="font-semibold block mb-1">Value: {formatCurrency(loyaltyPoints / 100, baseCurrency)}</span>
               You can redeem these points during checkout for a discount on your next meal or subscription renewal!
             </div>
           </CardContent>
