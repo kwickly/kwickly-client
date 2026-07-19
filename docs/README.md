@@ -16,6 +16,9 @@ Deprecated or superseded decisions are moved to the `archive/` folder.
 - [2026-07-19: Usage-Based Billing & Custom Subscription Tiers](architecture-and-infrastructure/2026-07-19-usage-based-billing-and-custom-tiers/billing-and-custom-tiers.md)
 - [2026-07-19: Menu Item Enrichment — Storefront UX](architecture-and-infrastructure/2026-07-19-menu-item-enrichment-ux/menu-enrichment-ux.md)
 
+### 🎨 Frontend & UX
+- [2026-07-19: Client UX & UI Guidelines](frontend-and-ux/client-ux-ui-guidelines.md)
+
 ### 🧪 Testing & QA
 - [2026-06-17: Testing Progress](testing-and-qa/2026-06-17-testing-progress/testing-progress.md)
 - [2026-07-16: End-to-End Testing Strategy](testing-and-qa/2026-07-16-e2e-testing-strategy/e2e-testing-strategy.md)
