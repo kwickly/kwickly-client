@@ -183,6 +183,7 @@ interface MenuItemCardProps {
 function MenuItemCard({
   item, categoryName, baseCurrency, brandColor, isAboveFold,
 }: MenuItemCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const cartStore = useCartStore();
   const qty = cartStore.items.find(i => i.id === item.id)?.quantity || 0;
   const imgSrc = item.imageUrl || getCategoryFallbackUrl(categoryName);
@@ -263,9 +264,19 @@ function MenuItemCard({
 
         {/* Row 4: Description */}
         {item.description && (
-          <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 mt-2 pr-2">
-            {item.description}
-          </p>
+          <div className="mt-2 pr-2">
+            <p className={`text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+              {item.description}
+            </p>
+            {item.description.length > 70 && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:underline mt-0.5"
+              >
+                {isExpanded ? 'Read less' : 'Read more'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Row 4.5: Ingredients */}
@@ -278,26 +289,23 @@ function MenuItemCard({
 
         {/* Row 5: Nutritional Info */}
         {item.calories && (
-          <div className="flex items-center gap-2 mt-3 text-[11px] font-medium text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 rounded-md px-2 py-1 w-fit bg-slate-50 dark:bg-slate-900/50">
-            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+          <div className="flex flex-wrap items-center gap-1.5 mt-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1 border border-slate-100 dark:border-slate-800 rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
               ⚡ {item.calories} kcal
-            </span>
+            </div>
             {(item.protein || item.carbs || item.fat) && (
-              <>
-                <span className="text-slate-300 dark:text-slate-700">|</span>
-                <div className="flex gap-1.5">
-                  {item.protein && <span>P: {item.protein}g</span>}
-                  {item.carbs && <span>C: {item.carbs}g</span>}
-                  {item.fat && <span>F: {item.fat}g</span>}
-                </div>
-              </>
+              <div className="flex gap-1.5 border border-slate-100 dark:border-slate-800 rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
+                {item.protein && <span>P: {item.protein}g</span>}
+                {item.carbs && <span>C: {item.carbs}g</span>}
+                {item.fat && <span>F: {item.fat}g</span>}
+              </div>
             )}
           </div>
         )}
       </div>
 
       {/* ── Right: Image + ADD/qty pill ─────────────────────────────── */}
-      <div className="relative shrink-0 flex flex-col items-center w-[130px] h-[130px] mb-4">
+      <div className="relative shrink-0 flex flex-col items-center w-[110px] h-[110px] sm:w-[130px] sm:h-[130px] mb-4">
         {/* Food image */}
         <div className="w-full h-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800 relative shadow-sm border border-slate-100 dark:border-slate-800">
           <Image
@@ -393,6 +401,7 @@ export default function MenuClientView({
   const cartStore = useCartStore();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(categories[0]?.id || null);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
+  const [activeOrderStatus, setActiveOrderStatus] = useState<any>(null);
   const isManualScroll = useRef(false);
 
   useEffect(() => {
@@ -400,6 +409,16 @@ export default function MenuClientView({
     const savedOrderId = localStorage.getItem('kwickly_active_order_id');
     if (savedOrderId) {
       setActiveOrderId(savedOrderId);
+      // Fetch status
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+      fetch(`${apiUrl}/orders/public/status/${savedOrderId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setActiveOrderStatus(data.data);
+          }
+        })
+        .catch(err => console.error("Failed to load active order status", err));
     }
     
     if (qrToken) {
@@ -474,21 +493,46 @@ export default function MenuClientView({
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-[#faf8f5] dark:bg-slate-950">
 
-      {/* Active Order Banner */}
-      {activeOrderId && (
-        <div 
-          className="sticky top-16 z-40 bg-brand text-white px-4 py-3 flex items-center justify-between shadow-md cursor-pointer"
-          style={{ backgroundColor: brandColor }}
-          onClick={() => window.location.href = `/orders/${activeOrderId}`}
-        >
-          <div className="flex items-center gap-3">
-            <Receipt className="w-5 h-5 text-white" />
-            <div>
-              <p className="text-sm font-bold">You have an active order</p>
-              <p className="text-xs opacity-90">Tap to track status</p>
+      {/* Active Order Tracker (Floating Bottom) */}
+      {activeOrderStatus && activeOrderId && (
+        <div className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-sm">
+          <Link href={`/orders/${activeOrderId}`}>
+            <div 
+              className="bg-slate-900 text-white rounded-2xl p-4 shadow-xl flex items-center justify-between transition-transform hover:scale-[1.02] active:scale-[0.98] border border-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 shrink-0"
+                >
+                  {activeOrderStatus.kotStatus === 'ready' ? (
+                    <UtensilsCrossed className="w-5 h-5 text-emerald-400" />
+                  ) : activeOrderStatus.kotStatus === 'preparing' ? (
+                    <Flame className="w-5 h-5 text-orange-400" />
+                  ) : (
+                    <Receipt className="w-5 h-5 text-blue-400" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold">
+                    {activeOrderStatus.kotStatus === 'ready' ? 'Your food is ready!' :
+                     activeOrderStatus.kotStatus === 'preparing' ? 'Preparing your food' :
+                     'Order received'}
+                  </p>
+                  <p className="text-[11px] text-slate-300 mt-0.5">
+                    {activeOrderStatus.estimatedCompletionTime ? (
+                      (() => {
+                        const mins = Math.max(0, Math.round((new Date(activeOrderStatus.estimatedCompletionTime).getTime() - Date.now()) / 60000));
+                        return mins > 0 ? `Ready in ~${mins} mins` : 'Almost ready';
+                      })()
+                    ) : (
+                      'Tap to track status'
+                    )}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 opacity-60" />
             </div>
-          </div>
-          <ChevronRight className="w-5 h-5 opacity-80" />
+          </Link>
         </div>
       )}
 
@@ -587,7 +631,7 @@ export default function MenuClientView({
               {/* Category header */}
               <div className="flex items-center gap-3 mb-4 mt-6">
                 <h2 className="text-[20px] font-bold text-slate-900 dark:text-white tracking-tight">
-                  {category.name}
+                  {category.name.replace(/^[^\s\w]*/, '').trim()}
                 </h2>
                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                 <span className="text-[13px] font-semibold text-slate-400 shrink-0">
