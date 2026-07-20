@@ -69,10 +69,12 @@ export default async function TenantLayout({
       
       <style dangerouslySetInnerHTML={{
         __html: `
+          :root {
+            --font-sans: ${fontConfig};
+          }
           .tenant-wrapper {
             --primary: oklch(${primaryOklch});
             --primary-foreground: oklch(0.985 0 0); /* White foreground for contrast */
-            --font-sans: ${fontConfig};
           }
         `
       }} />
