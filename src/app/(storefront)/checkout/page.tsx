@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Store, CreditCard, Gift, Loader2, LogIn, ShoppingBag, ChevronRight } from 'lucide-react';
+import { MapPin, Store, CreditCard, Gift, Loader2, LogIn, ShoppingBag, ChevronRight, Utensils, ArrowLeft, QrCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { getTenantSlug } from '@/lib/tenant-helper';
 import { formatCurrency } from '@/lib/currency';
@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const [brandColor, setBrandColor] = useState('#4f46e5');
   const [limitExceeded, setLimitExceeded] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [allowTakeawayOnDineIn, setAllowTakeawayOnDineIn] = useState(false);
   const [loyaltyBalance, setLoyaltyBalance] = useState<number | null>(null); // actual balance from API
 
   const { isAuthenticated, user } = useAuthStore();
@@ -44,6 +45,7 @@ export default function CheckoutPage() {
         if (brandingData.success && brandingData.branding) {
           setBaseCurrency(brandingData.branding.baseCurrency || 'INR');
           setBrandColor(brandingData.branding.brandColor || '#4f46e5');
+          setAllowTakeawayOnDineIn(!!brandingData.branding.allowTakeawayOnDineIn);
         }
 
         const limitData = await limitRes.json();
@@ -61,8 +63,8 @@ export default function CheckoutPage() {
   }, []);
 
   const router = useRouter();
-  const { items, totalPrice, clearCart } = useCartStore();
-  const [diningMode, setDiningMode] = useState('takeaway');
+  const { items, totalPrice, clearCart, qrToken, updateItemFulfillmentMode } = useCartStore();
+  const [diningMode, setDiningMode] = useState(qrToken ? 'dine_in' : 'takeaway');
   const [isProcessing, setIsProcessing] = useState(false);
   const [useLoyalty, setUseLoyalty] = useState(false);
 
@@ -126,10 +128,14 @@ export default function CheckoutPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
       const orderPayload = {
         branchId: 'default',
-        tableNumber: 'Table 12',
+        tableNumber: qrToken ? 'QR-Ordered' : 'Counter',
+        mode: diningMode,
+        type: 'paid',
+        qrToken: qrToken || undefined,
         items: items.map(item => ({
           menuItemId: item.id,
           quantity: item.quantity,
+          fulfillmentMode: item.fulfillmentMode || undefined,
         })),
       };
 
@@ -140,9 +146,27 @@ export default function CheckoutPage() {
       });
 
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to place order');
+      if (!data.success) {
+        if (data.error?.toLowerCase().includes('invalid') || data.error === 'Internal Server Error') {
+          toast.error('Your cart contained invalid items and has been reset.');
+          clearCart();
+          router.push('/menu');
+          return;
+        }
+        throw new Error(data.error || 'Failed to place order');
+      }
 
-      toast.success('Order sent to kitchen! Please pay at the counter.');
+      if (diningMode === 'dine_in') {
+        toast.success('Order sent to kitchen! Enjoy your meal.');
+        if (data.data?.order?.id) {
+          localStorage.setItem('kwickly_active_order_id', data.data.order.id);
+          clearCart();
+          router.push(`/orders/${data.data.order.id}`);
+          return;
+        }
+      } else {
+        toast.success('Order sent to kitchen! Please pay at the counter.');
+      }
       clearCart();
       router.push('/menu');
     } catch (error: any) {
@@ -154,7 +178,12 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8">Confirm Order</h1>
+      <div className="flex items-center gap-3 mb-8">
+        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Confirm Order</h1>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
 
@@ -164,27 +193,37 @@ export default function CheckoutPage() {
           {/* Dining preference */}
           <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black text-slate-700 dark:text-slate-300">How would you like your order?</CardTitle>
+              <CardTitle className="text-sm font-black text-slate-700 dark:text-slate-300">
+                {qrToken ? 'Ordering Mode' : 'How would you like your order?'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <RadioGroup value={diningMode} onValueChange={setDiningMode} className="grid grid-cols-2 gap-3">
-                {[
-                  { value: 'takeaway', label: 'Takeaway', icon: Store },
-                  { value: 'delivery', label: 'Delivery', icon: MapPin },
-                ].map(({ value, label, icon: Icon }) => (
-                  <div key={value}>
-                    <RadioGroupItem value={value} id={value} className="peer sr-only" />
-                    <Label
-                      htmlFor={value}
-                      className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 cursor-pointer transition-all hover:border-slate-300 peer-data-[state=checked]:border-[3px]"
-                      style={diningMode === value ? { borderColor: brandColor } : {}}
-                    >
-                      <Icon className="h-5 w-5 text-slate-500" style={diningMode === value ? { color: brandColor } : {}} />
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300" style={diningMode === value ? { color: brandColor } : {}}>{label}</span>
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+              {qrToken ? (
+                <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-emerald-500/20 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400">
+                  <QrCode className="w-5 h-5" />
+                  <span className="text-sm font-bold">QR Table Order (Dine-in)</span>
+                </div>
+              ) : (
+                <RadioGroup value={diningMode} onValueChange={setDiningMode} className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'dine_in', label: 'Dine-in', icon: Utensils },
+                    { value: 'takeaway', label: 'Takeaway', icon: Store },
+                    { value: 'delivery', label: 'Delivery', icon: MapPin },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <div key={value}>
+                      <RadioGroupItem value={value} id={value} className="peer sr-only" />
+                      <Label
+                        htmlFor={value}
+                        className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 cursor-pointer transition-all hover:border-slate-300 peer-data-[state=checked]:border-[3px]"
+                        style={diningMode === value ? { borderColor: brandColor } : {}}
+                      >
+                        <Icon className="h-5 w-5 text-slate-500" style={diningMode === value ? { color: brandColor } : {}} />
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300" style={diningMode === value ? { color: brandColor } : {}}>{label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
             </CardContent>
           </Card>
 
@@ -195,19 +234,35 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {items.map(item => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="text-xs font-black rounded-lg px-2 py-0.5 text-white shrink-0"
-                      style={{ background: brandColor }}
-                    >
-                      {item.quantity}×
+                <div key={item.id} className="flex flex-col gap-2 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="text-xs font-black rounded-lg px-2 py-0.5 text-white shrink-0"
+                        style={{ background: brandColor }}
+                      >
+                        {item.quantity}×
+                      </span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
+                    </div>
+                    <span className="font-mono font-bold text-sm text-slate-800 dark:text-white shrink-0">
+                      {formatCurrency(item.price * item.quantity, baseCurrency)}
                     </span>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
                   </div>
-                  <span className="font-mono font-bold text-sm text-slate-800 dark:text-white shrink-0">
-                    {formatCurrency(item.price * item.quantity, baseCurrency)}
-                  </span>
+                  {diningMode === 'dine_in' && allowTakeawayOnDineIn && (
+                    <div className="pl-10 flex items-center gap-2">
+                      <label className="text-[11px] font-medium text-slate-500 cursor-pointer flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          className="rounded border-slate-300 text-brand focus:ring-brand accent-brand"
+                          style={{ accentColor: brandColor }}
+                          checked={item.fulfillmentMode === 'takeaway'}
+                          onChange={(e) => updateItemFulfillmentMode(item.id, e.target.checked ? 'takeaway' : undefined)}
+                        />
+                        Pack to-go
+                      </label>
+                    </div>
+                  )}
                 </div>
               ))}
             </CardContent>
@@ -307,6 +362,8 @@ export default function CheckoutPage() {
           >
             {isProcessing ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Placing Order…</>
+            ) : diningMode === 'dine_in' ? (
+              <><Utensils className="h-4 w-4" /> Place Order <ChevronRight className="h-3.5 w-3.5" /></>
             ) : (
               <><CreditCard className="h-4 w-4" /> Pay {formatCurrency(finalTotal, baseCurrency)} <ChevronRight className="h-3.5 w-3.5" /></>
             )}

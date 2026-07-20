@@ -15,9 +15,13 @@ Deprecated or superseded decisions are moved to the `archive/` folder.
 - [2026-07-19: Dynamic Storefront Routing & Theme Engine System](architecture-and-infrastructure/2026-07-19-multi-tenant-routing-and-branding/routing-and-branding.md)
 - [2026-07-19: Usage-Based Billing & Custom Subscription Tiers](architecture-and-infrastructure/2026-07-19-usage-based-billing-and-custom-tiers/billing-and-custom-tiers.md)
 - [2026-07-19: Menu Item Enrichment — Storefront UX](architecture-and-infrastructure/2026-07-19-menu-item-enrichment-ux/menu-enrichment-ux.md)
+- [2026-07-19: QR-Based Ordering & Session-Aware Checkout 🔴 Phase 9](architecture-and-infrastructure/2026-07-19-qr-order-session-flow/qr-order-session-flow.md)
 
 ### 🎨 Frontend & UX
 - [2026-07-19: Client UX & UI Guidelines](frontend-and-ux/client-ux-ui-guidelines.md)
+
+### 📈 Progress & Planning
+- [2026-07-19: Progress Tracker ← **START HERE**](progress-and-planning/2026-07-19-master-progress-tracker/progress-tracker.md)
 
 ### 🧪 Testing & QA
 - [2026-06-17: Testing Progress](testing-and-qa/2026-06-17-testing-progress/testing-progress.md)
@@ -33,3 +37,5 @@ Deprecated or superseded decisions are moved to the `archive/` folder.
 2. Create a folder named `YYYY-MM-DD-short-topic-name`.
 3. Add your markdown file inside.
 4. Update this `README.md` to link to your new file!
+5. Update the **Master Progress Tracker** if phases changed.
+

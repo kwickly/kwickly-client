@@ -29,7 +29,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Minus, Plus, Search, ShoppingBag,
   Flame, Leaf, ChevronRight, UtensilsCrossed,
-  Filter, Wheat, Droplet, Beef, AlertTriangle
+  Filter, Wheat, Droplet, Beef, AlertTriangle, Receipt
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useCartStore } from '@/store/useCart';
@@ -41,7 +41,7 @@ import Link from 'next/link';
 import { formatCurrency } from '@/lib/currency';
 import { getCategoryFallbackUrl, FOOD_BLUR_PLACEHOLDER } from '@/lib/image-utils';
 import { useMenuFilter } from '@/store/useMenuFilter';
-
+import { toast } from 'sonner';
 /* ─── Availability Logic ──────────────────────────────────────────────── */
 function getAvailabilityState(item: any): { isAvailable: boolean; reason?: string } {
   if (item.status === 'OUT_OF_STOCK') return { isAvailable: false, reason: 'Out of Stock' };
@@ -188,7 +188,8 @@ function MenuItemCard({
   const imgSrc = item.imageUrl || getCategoryFallbackUrl(categoryName);
 
   const handleAdd = useCallback(() => {
-    cartStore.addItem({ id: item.id, name: item.name, price: Number(item.price), quantity: 1 });
+    cartStore.addItem({ id: item.id, name: item.name, price: Number(item.price), quantity: 1 }, window.location.hostname.split('.')[0] || 'kwickly');
+    toast.success(`Added ${item.name} to cart`);
   }, [item, cartStore]);
 
   const handleDecrement = useCallback(() => {
@@ -375,6 +376,7 @@ interface MenuClientViewProps {
   tenantName?: string;
   logoUrl?: string | null;
   tagline?: string | null;
+  qrToken?: string;
 }
 
 /* ─── Main layout ────────────────────────────────────────────────────── */
@@ -385,10 +387,25 @@ export default function MenuClientView({
   tenantName = 'Restaurant',
   logoUrl,
   tagline,
+  qrToken,
 }: MenuClientViewProps) {
   const { searchQuery: search, vegOnly, setVegOnly } = useMenuFilter();
+  const cartStore = useCartStore();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(categories[0]?.id || null);
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const isManualScroll = useRef(false);
+
+  useEffect(() => {
+    // Check for active order in localStorage
+    const savedOrderId = localStorage.getItem('kwickly_active_order_id');
+    if (savedOrderId) {
+      setActiveOrderId(savedOrderId);
+    }
+    
+    if (qrToken) {
+      cartStore.setQrToken(qrToken);
+    }
+  }, [qrToken, cartStore]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -457,6 +474,24 @@ export default function MenuClientView({
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-[#faf8f5] dark:bg-slate-950">
+
+      {/* Active Order Banner */}
+      {activeOrderId && (
+        <div 
+          className="sticky top-16 z-40 bg-brand text-white px-4 py-3 flex items-center justify-between shadow-md cursor-pointer"
+          style={{ backgroundColor: brandColor }}
+          onClick={() => window.location.href = `/orders/${activeOrderId}`}
+        >
+          <div className="flex items-center gap-3">
+            <Receipt className="w-5 h-5 text-white" />
+            <div>
+              <p className="text-sm font-bold">You have an active order</p>
+              <p className="text-xs opacity-90">Tap to track status</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 opacity-80" />
+        </div>
+      )}
 
       {/* Mobile: horizontal category scroll */}
       <div 

@@ -8,7 +8,7 @@ async function getTenantMenu(slug: string) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     const res = await fetch(`${apiUrl}/menus/public/${slug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store', // Always fetch fresh data (especially after DB reseeds)
     });
 
     if (!res.ok) {
@@ -50,7 +50,12 @@ async function getTenantBranding(slug: string) {
   };
 }
 
-export default async function TenantMenuPage() {
+export default async function TenantMenuPage(
+  props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }
+) {
+  const searchParams = await props.searchParams;
+  const qrToken = searchParams.t as string | undefined;
+
   const headersList = await headers();
   const host = headersList.get('host') || '';
   const tenantSlug = getTenantSlug(host) || 'kwickly';
@@ -78,6 +83,7 @@ export default async function TenantMenuPage() {
       tenantName={branding.name || tenantSlug}
       logoUrl={branding.logoUrl || null}
       tagline={branding.tagline || null}
+      qrToken={qrToken}
     />
   );
 }

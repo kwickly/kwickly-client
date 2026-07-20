@@ -9,7 +9,7 @@ describe('useCartStore', () => {
 
   it('should add a new item to an empty cart', () => {
     const item = { id: 'item-1', name: 'Burger', price: 10, quantity: 1 };
-    useCartStore.getState().addItem(item);
+    useCartStore.getState().addItem(item, "kwickly");
 
     const state = useCartStore.getState();
     expect(state.items).toHaveLength(1);
@@ -21,8 +21,8 @@ describe('useCartStore', () => {
   it('should increment quantity for an existing item', () => {
     const item = { id: 'item-1', name: 'Burger', price: 10, quantity: 1 };
     
-    useCartStore.getState().addItem(item);
-    useCartStore.getState().addItem(item); // Add same item again
+    useCartStore.getState().addItem(item, "kwickly");
+    useCartStore.getState().addItem(item, "kwickly"); // Add same item again
 
     const state = useCartStore.getState();
     expect(state.items).toHaveLength(1);
@@ -33,7 +33,7 @@ describe('useCartStore', () => {
 
   it('should update quantity for an existing item', () => {
     const item = { id: 'item-1', name: 'Burger', price: 10, quantity: 1 };
-    useCartStore.getState().addItem(item);
+    useCartStore.getState().addItem(item, "kwickly");
     
     useCartStore.getState().updateQuantity('item-1', 5);
 
@@ -47,8 +47,8 @@ describe('useCartStore', () => {
     const item1 = { id: 'item-1', name: 'Burger', price: 10, quantity: 1 };
     const item2 = { id: 'item-2', name: 'Fries', price: 5, quantity: 1 };
     
-    useCartStore.getState().addItem(item1);
-    useCartStore.getState().addItem(item2);
+    useCartStore.getState().addItem(item1, "kwickly");
+    useCartStore.getState().addItem(item2, "kwickly");
     
     useCartStore.getState().removeItem('item-1');
 
@@ -61,8 +61,8 @@ describe('useCartStore', () => {
     const item1 = { id: 'item-1', name: 'Burger', price: 10, quantity: 1 };
     const item2 = { id: 'item-2', name: 'Fries', price: 5, quantity: 1 };
     
-    useCartStore.getState().addItem(item1);
-    useCartStore.getState().addItem(item2);
+    useCartStore.getState().addItem(item1, "kwickly");
+    useCartStore.getState().addItem(item2, "kwickly");
     
     useCartStore.getState().clearCart();
 
