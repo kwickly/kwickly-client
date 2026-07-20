@@ -5,7 +5,7 @@ export function PlatformLandingView() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 text-center bg-slate-50 dark:bg-slate-950">
       <div className="max-w-xl space-y-8">
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
           Welcome to <span className="text-indigo-600">Kwickly</span>
         </h1>
         <p className="text-lg text-slate-600 dark:text-slate-400">

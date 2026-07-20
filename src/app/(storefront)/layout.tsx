@@ -25,7 +25,8 @@ async function getTenantBranding(slug: string) {
     themeMode: 'light',
     name: 'Kwickly (Fallback)',
     baseCurrency: 'INR',
-    enabledModules: { dineIn: true, takeaway: true, delivery: true, subscriptions: true }
+    enabledModules: { dineIn: true, takeaway: true, delivery: true, subscriptions: true },
+    themeConfig: { fonts: { sans: "Poppins, sans-serif" } }
   };
 }
 
@@ -55,14 +56,23 @@ export default async function TenantLayout({
   // We compute the OKLCH values to support Tailwind v4's format
   const primaryOklch = hexToOklchString(branding.brandColor || '#4f46e5');
 
+  // Determine font family
+  const fontConfig = branding.themeConfig?.fonts?.sans || 'Poppins, sans-serif';
+  const fontFamilyName = fontConfig.split(',')[0].replace(/['"]/g, '').trim();
+  const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamilyName.replace(/ /g, '+')}:wght@300;400;500;600;700&display=swap`;
+
   return (
     <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href={fontUrl} rel="stylesheet" />
+      
       <style dangerouslySetInnerHTML={{
         __html: `
           .tenant-wrapper {
             --primary: oklch(${primaryOklch});
             --primary-foreground: oklch(0.985 0 0); /* White foreground for contrast */
-            --font-sans: 'Inter', sans-serif;
+            --font-sans: ${fontConfig};
           }
         `
       }} />

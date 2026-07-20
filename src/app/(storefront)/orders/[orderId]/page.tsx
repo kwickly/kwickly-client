@@ -116,7 +116,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
         {/* Page Title & Meta */}
         <div className="flex items-end justify-between mb-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">
               Track Order
             </h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -141,9 +141,9 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
         </div>
         
         {/* Status Stepper Card */}
-        <Card>
-          <CardHeader className="text-center pb-2">
-            <h2 className="text-2xl font-heading font-bold text-foreground tracking-tight">
+        <div className="bg-card text-card-foreground rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-none overflow-hidden">
+          <CardHeader className="text-center pb-2 pt-8">
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
               {order.kotStatus === 'ready' ? "It's Ready!" : 
                order.kotStatus === 'preparing' ? "In the Kitchen" : 
                "Order Received"}
@@ -173,10 +173,10 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
 
               {/* Step 1: Pending */}
               <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 border ${
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                   currentStepIndex >= 0 
-                    ? 'bg-primary border-primary text-primary-foreground' 
-                    : 'bg-background border-border text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
+                    : 'bg-muted text-muted-foreground'
                 }`}>
                   <Receipt className="h-5 w-5" />
                 </div>
@@ -185,13 +185,13 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
 
               {/* Step 2: Preparing */}
               <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 border relative ${
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative ${
                   currentStepIndex >= 1 
-                    ? 'bg-primary border-primary text-primary-foreground' 
-                    : 'bg-background border-border text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
+                    : 'bg-muted text-muted-foreground'
                 }`}>
                   {order.kotStatus === 'preparing' && (
-                    <span className="absolute inset-0 rounded-xl bg-primary animate-ping opacity-30" />
+                    <span className="absolute inset-0 rounded-2xl bg-primary animate-ping opacity-30" />
                   )}
                   <ChefHat className="h-5 w-5" />
                 </div>
@@ -200,10 +200,10 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
 
               {/* Step 3: Ready */}
               <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 border ${
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                   currentStepIndex >= 2 
-                    ? 'bg-primary border-primary text-primary-foreground' 
-                    : 'bg-background border-border text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
+                    : 'bg-muted text-muted-foreground'
                 }`}>
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
@@ -211,10 +211,10 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
               </div>
             </div>
           </CardContent>
-        </Card>
+        </div>
 
         {/* Receipt styled details */}
-        <div className="relative rounded-2xl bg-card shadow-sm border border-border overflow-hidden">
+        <div className="relative rounded-[24px] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-none overflow-hidden">
           {/* Dashed line top decoration */}
           <div className="absolute top-0 left-0 right-0 h-1 flex justify-around overflow-hidden opacity-20">
             {Array.from({ length: 40 }).map((_, i) => (
@@ -246,16 +246,16 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
               ))}
             </div>
 
-            <div className="my-6 border-t border-dashed border-border" />
+            <div className="my-6 border-t border-dashed border-border/40" />
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium text-muted-foreground">
                 <span>Subtotal</span>
                 <span className="tabular-nums">₹{Number(order.subtotal).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-lg font-bold text-foreground">Total</span>
-                <span className="text-2xl font-bold text-foreground tabular-nums tracking-tight">₹{Number(order.total).toFixed(2)}</span>
+              <div className="flex justify-between items-center text-lg pt-2">
+                <span className="font-bold text-foreground">Total</span>
+                <span className="font-bold text-foreground tabular-nums">₹{Number(order.total).toFixed(2)}</span>
               </div>
             </div>
           </div>

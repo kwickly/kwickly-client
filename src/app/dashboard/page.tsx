@@ -52,7 +52,7 @@ export default function DashboardPage() {
             <CardDescription>Pre-paid fiat balance</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-500">{formatCurrency(45.50, baseCurrency)}</p>
+            <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-500">{formatCurrency(45.50, baseCurrency)}</p>
           </CardContent>
         </Card>
         
@@ -62,7 +62,7 @@ export default function DashboardPage() {
             <CardDescription>Earned from orders (100 pts = {formatCurrency(1, baseCurrency)})</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-extrabold text-amber-500">1,250 <span className="text-sm font-normal text-amber-700 dark:text-amber-300">pts</span></p>
+            <p className="text-4xl font-bold text-amber-500">1,250 <span className="text-sm font-normal text-amber-700 dark:text-amber-300">pts</span></p>
           </CardContent>
         </Card>
       </div>

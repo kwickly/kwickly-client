@@ -84,7 +84,7 @@ function NutritionSheet({ item, children }: { item: any; children: React.ReactNo
       <SheetContent side="bottom" className="h-[80vh] sm:h-auto sm:max-h-[85vh] rounded-t-3xl sm:rounded-3xl sm:max-w-md sm:mx-auto bg-white dark:bg-slate-950 px-0 flex flex-col border-none shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700 mx-auto mt-3 mb-0 shrink-0" />
         <SheetHeader className="px-6 py-4 shrink-0 text-left">
-          <SheetTitle className="text-xl font-black">{item.name}</SheetTitle>
+          <SheetTitle className="text-xl font-bold">{item.name}</SheetTitle>
           <p className="text-sm text-slate-500">{item.description}</p>
         </SheetHeader>
         <Separator />
@@ -92,7 +92,7 @@ function NutritionSheet({ item, children }: { item: any; children: React.ReactNo
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {item.ingredients?.length > 0 && (
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Ingredients</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Ingredients</h4>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                 {item.ingredients.join(', ')}
               </p>
@@ -101,7 +101,7 @@ function NutritionSheet({ item, children }: { item: any; children: React.ReactNo
           
           {item.allergens?.length > 0 && (
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Allergens</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Allergens</h4>
               <div className="flex flex-wrap gap-2">
                 {item.allergens.map((a: string) => (
                   <span key={a} className="text-xs font-bold px-2.5 py-1 rounded-md bg-red-50 text-red-700 border border-red-200">
@@ -114,25 +114,25 @@ function NutritionSheet({ item, children }: { item: any; children: React.ReactNo
 
           {(item.calories || item.protein || item.carbs || item.fat) && (
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
                 Nutrition {item.servingSize ? `(per ${item.servingSize})` : '(approx.)'}
               </h4>
               <div className="grid grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-800">
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Calories</p>
-                  <p className="text-sm font-black mt-0.5">{item.calories || '-'} kcal</p>
+                  <p className="text-sm font-bold mt-0.5">{item.calories || '-'} kcal</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Protein</p>
-                  <p className="text-sm font-black mt-0.5">{item.protein ? `${item.protein}g` : '-'}</p>
+                  <p className="text-sm font-bold mt-0.5">{item.protein ? `${item.protein}g` : '-'}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Carbs</p>
-                  <p className="text-sm font-black mt-0.5">{item.carbs ? `${item.carbs}g` : '-'}</p>
+                  <p className="text-sm font-bold mt-0.5">{item.carbs ? `${item.carbs}g` : '-'}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Fat</p>
-                  <p className="text-sm font-black mt-0.5">{item.fat ? `${item.fat}g` : '-'}</p>
+                  <p className="text-sm font-bold mt-0.5">{item.fat ? `${item.fat}g` : '-'}</p>
                 </div>
               </div>
             </div>
@@ -350,7 +350,7 @@ function MenuItemCard({
               <button
                 onClick={handleAdd}
                 aria-label={`Add ${item.name} to cart`}
-                className="h-9 px-8 rounded-lg text-[14px] font-extrabold shadow-sm bg-white dark:bg-slate-800 text-emerald-600 border border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors min-w-[100px]"
+                className="h-9 px-8 rounded-lg text-[14px] font-bold shadow-sm bg-white dark:bg-slate-800 text-emerald-600 border border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors min-w-[100px]"
               >
                 ADD
               </button>
@@ -448,7 +448,6 @@ export default function MenuClientView({
     }
   };
 
-  const cartStore = useCartStore();
   const totalItems = cartStore.totalItems();
   const totalPrice = cartStore.totalPrice();
 
@@ -512,7 +511,7 @@ export default function MenuClientView({
               style={activeCategoryId === cat.id ? { background: `linear-gradient(135deg, ${brandColor}, ${brandColor}dd)` } : {}}
             >
               {cat.name.replace(/^[^\s\w]*/, '').trim()}
-              <span className={`ml-1.5 text-[10px] font-black ${activeCategoryId === cat.id ? 'opacity-70' : 'opacity-40'}`}>
+              <span className={`ml-1.5 text-[10px] font-bold ${activeCategoryId === cat.id ? 'opacity-70' : 'opacity-40'}`}>
                 {cat.items?.length || 0}
               </span>
             </button>
@@ -526,7 +525,7 @@ export default function MenuClientView({
         {/* ── Col 1: Left sticky category rail (desktop) ─────────────── */}
         <aside className="hidden lg:block lg:col-span-2">
           <nav className="sticky top-24 space-y-0.5">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-2 mb-3">Menu</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 px-2 mb-3">Menu</p>
             {categories.map(cat => (
               <button
                 key={cat.id}
@@ -545,7 +544,7 @@ export default function MenuClientView({
                   {cat.name.replace(/^[^\s\w]*/, '').trim()}
                 </span>
                 <span
-                  className={`text-[10px] font-black rounded-full px-2 py-0.5 shrink-0 transition-colors ${
+                  className={`text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0 transition-colors ${
                     activeCategoryId === cat.id
                       ? 'text-white'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
@@ -575,7 +574,7 @@ export default function MenuClientView({
               </div>
               <button
                 onClick={() => { useMenuFilter.getState().setSearchQuery(''); setVegOnly(false); }}
-                className="text-xs font-black underline underline-offset-2"
+                className="text-xs font-bold underline underline-offset-2"
                 style={{ color: brandColor }}
               >
                 Clear filters
@@ -640,11 +639,11 @@ export default function MenuClientView({
               <div className="rounded-2xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
                 {/* Cart header */}
                 <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-                  <span className="flex items-center gap-1.5 text-xs font-black text-slate-800 dark:text-slate-100">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-100">
                     <ShoppingBag className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     Your Order
                     <span
-                      className="text-[9px] font-black px-1.5 py-px rounded-full text-white ml-0.5"
+                      className="text-[9px] font-bold px-1.5 py-px rounded-full text-white ml-0.5"
                       style={{ background: brandColor }}
                     >
                       {totalItems}
@@ -652,7 +651,7 @@ export default function MenuClientView({
                   </span>
                   <button
                     onClick={cartStore.clearCart}
-                    className="text-[9px] font-black uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors"
+                    className="text-[9px] font-bold uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors"
                   >
                     Clear
                   </button>
@@ -682,7 +681,7 @@ export default function MenuClientView({
                           >
                             <Minus className="w-2.5 h-2.5 text-slate-500" />
                           </button>
-                          <span className="text-[11px] font-black text-slate-800 dark:text-slate-200 w-4 text-center tabular-nums">
+                          <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 w-4 text-center tabular-nums">
                             {ci.quantity}
                           </span>
                           <button
@@ -713,14 +712,14 @@ export default function MenuClientView({
                   </div>
                   <Separator className="opacity-40 my-1" />
                   <div className="flex justify-between items-baseline">
-                    <span className="text-sm font-black text-slate-900 dark:text-white">To Pay</span>
-                    <span className="text-base font-black font-mono" style={{ color: brandColor }}>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">To Pay</span>
+                    <span className="text-base font-bold font-mono" style={{ color: brandColor }}>
                       {formatCurrency(totalPrice * 1.08, baseCurrency)}
                     </span>
                   </div>
                   <Link href="/checkout" className="block pt-1.5">
                     <button
-                      className="w-full h-11 rounded-xl text-xs font-black tracking-widest uppercase text-white flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow"
+                      className="w-full h-11 rounded-xl text-xs font-bold tracking-widest uppercase text-white flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow"
                       style={{ background: brandColor }}
                     >
                       Place Order <ChevronRight className="w-3.5 h-3.5" />
@@ -745,20 +744,20 @@ export default function MenuClientView({
               style={{ background: brandColor }}
             >
               <div className="flex items-center gap-3">
-                <span className="bg-white/25 rounded-xl px-2.5 py-1 text-xs font-black flex items-center gap-1.5">
+                <span className="bg-white/25 rounded-xl px-2.5 py-1 text-xs font-bold flex items-center gap-1.5">
                   <ShoppingBag className="w-3.5 h-3.5" />
                   {totalItems} {totalItems === 1 ? 'item' : 'items'}
                 </span>
                 <span className="text-sm">View Order</span>
               </div>
-              <span className="font-mono font-black">{formatCurrency(totalPrice, baseCurrency)}</span>
+              <span className="font-mono font-bold">{formatCurrency(totalPrice, baseCurrency)}</span>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-[82vh] rounded-t-3xl bg-white dark:bg-slate-950 px-0 flex flex-col border-none shadow-2xl">
               {/* Handle */}
               <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700 mx-auto mt-3 mb-0 shrink-0" />
 
               <SheetHeader className="px-6 py-4 shrink-0">
-                <SheetTitle className="text-lg font-black flex items-center gap-2">
+                <SheetTitle className="text-lg font-bold flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5" style={{ color: brandColor }} />
                   Review Order
                 </SheetTitle>
@@ -787,7 +786,7 @@ export default function MenuClientView({
                       >
                         <Minus className="w-3.5 h-3.5 text-slate-500" />
                       </button>
-                      <span className="font-black text-xs w-4 text-center tabular-nums text-slate-800 dark:text-white">
+                      <span className="font-bold text-xs w-4 text-center tabular-nums text-slate-800 dark:text-white">
                         {ci.quantity}
                       </span>
                       <button
@@ -817,8 +816,8 @@ export default function MenuClientView({
                 </div>
                 <Separator className="opacity-40" />
                 <div className="flex justify-between items-baseline">
-                  <span className="font-black text-slate-900 dark:text-white text-base">To Pay</span>
-                  <span className="font-black font-mono text-lg" style={{ color: brandColor }}>
+                  <span className="font-bold text-slate-900 dark:text-white text-base">To Pay</span>
+                  <span className="font-bold font-mono text-lg" style={{ color: brandColor }}>
                     {formatCurrency(totalPrice * 1.08, baseCurrency)}
                   </span>
                 </div>

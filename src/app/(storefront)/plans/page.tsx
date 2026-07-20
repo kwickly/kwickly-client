@@ -51,7 +51,7 @@ export default function PlansPage() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="text-center mb-16 space-y-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Meal Subscriptions</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Meal Subscriptions</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Save money and skip the queue. Subscribe to a plan and simply scan your QR code at the counter.
         </p>
@@ -70,7 +70,7 @@ export default function PlansPage() {
             <CardHeader className="text-center pb-2 pt-8">
               <CardTitle className="text-2xl">{plan.name}</CardTitle>
               <CardDescription className="text-md mt-2 font-medium text-slate-600 dark:text-slate-400">{plan.type}</CardDescription>
-              <div className="mt-4 flex justify-center items-baseline text-5xl font-extrabold">
+              <div className="mt-4 flex justify-center items-baseline text-5xl font-bold">
                 {formatCurrency(plan.price, baseCurrency)}
               </div>
               <p className="text-sm text-muted-foreground mt-2 font-medium">

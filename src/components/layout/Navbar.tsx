@@ -102,7 +102,7 @@ export function Navbar() {
                   </div>
                 )}
                 {displayName && (
-                  <span className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight">{displayName}</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">{displayName}</span>
                 )}
               </div>
               <nav className="flex flex-col gap-1">
@@ -159,11 +159,11 @@ export function Navbar() {
             {isLoadingBranding ? (
               <Skeleton className="h-5 w-32 hidden sm:block" />
             ) : displayName ? (
-              <span className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight hidden sm:inline-block group-hover:opacity-80 transition-opacity">
+              <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight hidden sm:inline-block group-hover:opacity-80 transition-opacity">
                 {displayName}
               </span>
             ) : (
-              <span className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight hidden sm:inline-block">
+              <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight hidden sm:inline-block">
                 Kwickly
               </span>
             )}

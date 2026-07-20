@@ -29,7 +29,7 @@ export function TenantLandingView({
       <section className="relative px-6 py-24 md:py-32 flex flex-col items-center text-center overflow-hidden">
         <div className="absolute inset-0 bg-primary/10 dark:bg-primary/5 -skew-y-3 transform origin-top-left z-0" />
         <div className="relative z-10 max-w-3xl space-y-8">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white">
             Welcome to <br />
             <span className="text-primary">{brandName}</span>
           </h1>

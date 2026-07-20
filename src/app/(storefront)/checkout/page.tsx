@@ -182,7 +182,7 @@ export default function CheckoutPage() {
         <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Confirm Order</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Confirm Order</h1>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
           {/* Dining preference */}
           <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black text-slate-700 dark:text-slate-300">
+              <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 {qrToken ? 'Ordering Mode' : 'How would you like your order?'}
               </CardTitle>
             </CardHeader>
@@ -230,7 +230,7 @@ export default function CheckoutPage() {
           {/* Order items */}
           <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black text-slate-700 dark:text-slate-300">Your Items</CardTitle>
+              <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">Your Items</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {items.map(item => (
@@ -238,7 +238,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <span
-                        className="text-xs font-black rounded-lg px-2 py-0.5 text-white shrink-0"
+                        className="text-xs font-bold rounded-lg px-2 py-0.5 text-white shrink-0"
                         style={{ background: brandColor }}
                       >
                         {item.quantity}×
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
         <div className="space-y-5">
           <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black text-slate-700 dark:text-slate-300">Bill Summary</CardTitle>
+              <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">Bill Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
 
@@ -295,7 +295,7 @@ export default function CheckoutPage() {
                   </div>
                   <button
                     onClick={() => setUseLoyalty(v => !v)}
-                    className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${
+                    className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${
                       useLoyalty ? 'text-white' : 'border'
                     }`}
                     style={useLoyalty
@@ -315,7 +315,7 @@ export default function CheckoutPage() {
                     <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
                       Sign in to apply points and save on every order.
                     </p>
-                    <Link href="/auth" className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor }}>
+                    <Link href="/auth" className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: brandColor }}>
                       <LogIn className="w-3 h-3" /> Sign in to unlock
                     </Link>
                   </div>
@@ -345,8 +345,8 @@ export default function CheckoutPage() {
               <Separator className="opacity-50" />
 
               <div className="flex justify-between items-center">
-                <span className="font-black text-slate-900 dark:text-white text-base">To Pay</span>
-                <span className="font-black font-mono text-lg" style={{ color: brandColor }}>
+                <span className="font-bold text-slate-900 dark:text-white text-base">To Pay</span>
+                <span className="font-bold font-mono text-lg" style={{ color: brandColor }}>
                   {formatCurrency(finalTotal, baseCurrency)}
                 </span>
               </div>
@@ -357,7 +357,7 @@ export default function CheckoutPage() {
           <button
             onClick={handlePayment}
             disabled={isProcessing}
-            className="w-full h-14 rounded-2xl text-white text-sm font-black flex items-center justify-center gap-2.5 shadow-lg transition-all disabled:opacity-60 hover:brightness-95"
+            className="w-full h-14 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2.5 shadow-lg transition-all disabled:opacity-60 hover:brightness-95"
             style={{ background: brandColor }}
           >
             {isProcessing ? (
