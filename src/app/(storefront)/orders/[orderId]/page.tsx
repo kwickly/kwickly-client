@@ -3,10 +3,10 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, ChefHat, Clock, Receipt } from 'lucide-react';
+import { Clock, AlertCircle, ChefHat, Receipt, CheckCircle2 } from 'lucide-react';
+import { useSmartETA } from '@/hooks/useSmartETA';
 
 interface OrderItem {
   id: string;
@@ -26,6 +26,7 @@ interface OrderStatus {
   subtotal: string;
   total: string;
   createdAt: string;
+  estimatedCompletionTime: string | null;
   items: OrderItem[];
 }
 
@@ -109,6 +110,13 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
   const steps = ['pending', 'preparing', 'ready', 'completed'];
   const currentStepIndex = steps.indexOf(order.kotStatus || 'pending');
 
+  // Smart ETA Hook
+  const { etaText, isDelayed } = useSmartETA(
+    order.createdAt,
+    order.estimatedCompletionTime,
+    order.kotStatus as 'pending' | 'preparing' | 'ready' | 'completed'
+  );
+
   return (
     <div className="min-h-screen bg-background pb-24 pt-6 md:pt-10">
       <main className="container mx-auto px-4 max-w-lg space-y-6">
@@ -125,8 +133,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
               </span>
               <span className="w-1 h-1 rounded-full bg-border" />
               <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                Placed at {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
@@ -157,6 +164,36 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
                order.kotStatus === 'preparing' ? "The chefs are preparing your food right now." : 
                "We've got your order and are waiting to start."}
             </p>
+
+            {/* Smart ETA Block */}
+            {order.kotStatus !== 'ready' && order.kotStatus !== 'completed' && (
+              <div className="mt-6 flex flex-col items-center justify-center">
+                <div className={`inline-flex items-center justify-center rounded-2xl px-6 py-4 shadow-sm border ${
+                  isDelayed ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800' 
+                            : 'bg-muted/50 border-transparent'
+                }`}>
+                  <div className="flex flex-col items-center">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                      isDelayed ? 'text-orange-600 dark:text-orange-400 animate-pulse' : 'text-muted-foreground'
+                    }`}>
+                      {isDelayed ? 'Running Late' : 'Arriving In'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {isDelayed ? (
+                        <AlertCircle className="w-5 h-5 text-orange-500 animate-bounce" />
+                      ) : (
+                        <Clock className="w-5 h-5 text-primary" />
+                      )}
+                      <span className={`text-3xl font-bold tracking-tight ${
+                        isDelayed ? 'text-orange-700 dark:text-orange-300' : 'text-foreground'
+                      }`}>
+                        {etaText}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardHeader>
           
           <CardContent className="pt-6 pb-8">
