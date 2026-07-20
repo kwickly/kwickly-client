@@ -24,7 +24,7 @@ import { getTenantSlug } from '@/lib/tenant-helper';
 import { Skeleton } from '@/components/ui/skeletons';
 import { usePathname } from 'next/navigation';
 import { useMenuFilter } from '@/store/useMenuFilter';
-import { Search, Receipt } from 'lucide-react';
+import { Search, Timer } from 'lucide-react';
 
 interface TenantBranding {
   name: string;
@@ -237,7 +237,7 @@ export function Navbar() {
           {activeOrderId && (
             <Link href={`/orders/${activeOrderId}`}>
               <button className="relative inline-flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-brand/10 hover:text-brand h-9 w-9 transition-colors">
-                <Receipt className="h-4.5 w-4.5" />
+                <Timer className="h-4.5 w-4.5" />
                 <span className="absolute top-1.5 right-1.5 flex h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
                 <span className="sr-only">Active Order</span>
               </button>

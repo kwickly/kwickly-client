@@ -132,9 +132,13 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
           </div>
           {order.tableNumber && (
             <div className="flex flex-col items-end">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Dine In</span>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
+                {order.mode === 'takeaway' ? 'Takeaway' : 'Dine In'}
+              </span>
               <Badge variant="outline" className="text-foreground font-bold text-lg px-3 py-1">
-                Table {order.tableNumber}
+                {order.tableNumber.toLowerCase() === 'counter' 
+                  ? 'Counter' 
+                  : `Table ${order.tableNumber}`}
               </Badge>
             </div>
           )}
