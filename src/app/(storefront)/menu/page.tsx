@@ -55,6 +55,7 @@ export default async function TenantMenuPage(
 ) {
   const searchParams = await props.searchParams;
   const qrToken = searchParams.t as string | undefined;
+  const sessionId = searchParams.sessionId as string | undefined;
 
   const headersList = await headers();
   const host = headersList.get('host') || '';
@@ -84,6 +85,7 @@ export default async function TenantMenuPage(
       logoUrl={branding.logoUrl || null}
       tagline={branding.tagline || null}
       qrToken={qrToken}
+      sessionId={sessionId}
     />
   );
 }

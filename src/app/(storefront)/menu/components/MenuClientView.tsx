@@ -117,7 +117,7 @@ function NutritionSheet({ item, children }: { item: any; children: React.ReactNo
               <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
                 Nutrition {item.servingSize ? `(per ${item.servingSize})` : '(approx.)'}
               </h4>
-              <div className="grid grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-900 rounded-[24px] p-3 border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Calories</p>
                   <p className="text-sm font-bold mt-0.5">{item.calories || '-'} kcal</p>
@@ -206,7 +206,7 @@ function MenuItemCard({
 
   return (
     <div
-      className={`relative flex flex-row justify-between items-start gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-md ${availability.isAvailable ? '' : 'opacity-60 grayscale-[0.2]'}`}
+      className={`relative flex flex-row justify-between items-start gap-4 p-5 bg-card text-card-foreground rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-none transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] ${availability.isAvailable ? '' : 'opacity-60 grayscale-[0.2]'}`}
     >
       {/* ── Left: Text content ──────────────────────────────────────── */}
       <div className={`flex-1 min-w-0 flex flex-col transition-all duration-200`}>
@@ -290,11 +290,11 @@ function MenuItemCard({
         {/* Row 5: Nutritional Info */}
         {item.calories && (
           <div className="flex flex-wrap items-center gap-1.5 mt-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1 border border-slate-100 dark:border-slate-800 rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex items-center gap-1 border-none shadow-sm rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
               ⚡ {item.calories} kcal
             </div>
             {(item.protein || item.carbs || item.fat) && (
-              <div className="flex gap-1.5 border border-slate-100 dark:border-slate-800 rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
+              <div className="flex gap-1.5 border-none shadow-sm rounded-md px-2 py-0.5 bg-slate-50 dark:bg-slate-900/50">
                 {item.protein && <span>P: {item.protein}g</span>}
                 {item.carbs && <span>C: {item.carbs}g</span>}
                 {item.fat && <span>F: {item.fat}g</span>}
@@ -307,7 +307,7 @@ function MenuItemCard({
       {/* ── Right: Image + ADD/qty pill ─────────────────────────────── */}
       <div className="relative shrink-0 flex flex-col items-center w-[110px] h-[110px] sm:w-[130px] sm:h-[130px] mb-4">
         {/* Food image */}
-        <div className="w-full h-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800 relative shadow-sm border border-slate-100 dark:border-slate-800">
+        <div className="w-full h-full rounded-[16px] overflow-hidden bg-slate-50 dark:bg-slate-800 relative shadow-sm border-none">
           <Image
             src={imgSrc}
             alt={item.name}
@@ -381,10 +381,11 @@ interface MenuClientViewProps {
   categories: any[];
   baseCurrency?: string;
   brandColor?: string;
-  tenantName?: string;
-  logoUrl?: string | null;
-  tagline?: string | null;
+  tenantName: string;
+  logoUrl: string | null;
+  tagline: string | null;
   qrToken?: string;
+  sessionId?: string;
 }
 
 /* ─── Main layout ────────────────────────────────────────────────────── */
@@ -396,6 +397,7 @@ export default function MenuClientView({
   logoUrl,
   tagline,
   qrToken,
+  sessionId,
 }: MenuClientViewProps) {
   const { searchQuery: search, vegOnly, setVegOnly } = useMenuFilter();
   const cartStore = useCartStore();
@@ -682,6 +684,12 @@ export default function MenuClientView({
             ) : (
               <div className="rounded-2xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
                 {/* Cart header */}
+                {sessionId && (
+                  <div className="w-full bg-emerald-500 text-white text-xs font-bold text-center py-1.5 uppercase tracking-wider flex items-center justify-center gap-2">
+                    <ShoppingBag className="w-3 h-3" />
+                    Adding to Active Order
+                  </div>
+                )}
                 <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
                   <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-100">
                     <ShoppingBag className="w-3.5 h-3.5" style={{ color: brandColor }} />
@@ -761,7 +769,7 @@ export default function MenuClientView({
                       {formatCurrency(totalPrice * 1.08, baseCurrency)}
                     </span>
                   </div>
-                  <Link href="/checkout" className="block pt-1.5">
+                  <Link href={sessionId ? `/checkout?sessionId=${sessionId}` : '/checkout'} className="block pt-1.5">
                     <button
                       className="w-full h-11 rounded-xl text-xs font-bold tracking-widest uppercase text-white flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow"
                       style={{ background: brandColor }}
@@ -865,7 +873,7 @@ export default function MenuClientView({
                     {formatCurrency(totalPrice * 1.08, baseCurrency)}
                   </span>
                 </div>
-                <Link href="/checkout" className="block pt-1">
+                <Link href={sessionId ? `/checkout?sessionId=${sessionId}` : '/checkout'} className="block pt-1">
                   <button
                     className="w-full h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-xl transition-all hover:brightness-95"
                     style={{ background: brandColor }}

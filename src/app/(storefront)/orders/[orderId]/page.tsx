@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, AlertCircle, ChefHat, Receipt, CheckCircle2 } from 'lucide-react';
+import { Clock, AlertCircle, ChefHat, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { useSmartETA } from '@/hooks/useSmartETA';
 
 interface OrderItem {
@@ -85,6 +85,13 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
     };
   }, [orderId, API_URL]);
 
+  // Smart ETA Hook (Must be called before conditional returns)
+  const { etaText, isDelayed } = useSmartETA(
+    order?.createdAt || new Date().toISOString(),
+    order?.estimatedCompletionTime || null,
+    (order?.kotStatus as 'pending' | 'preparing' | 'ready' | 'completed') || 'pending'
+  );
+
   if (loading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
@@ -106,16 +113,6 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
     );
   }
 
-  // Determine current step index
-  const steps = ['pending', 'preparing', 'ready', 'completed'];
-  const currentStepIndex = steps.indexOf(order.kotStatus || 'pending');
-
-  // Smart ETA Hook
-  const { etaText, isDelayed } = useSmartETA(
-    order.createdAt,
-    order.estimatedCompletionTime,
-    order.kotStatus as 'pending' | 'preparing' | 'ready' | 'completed'
-  );
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-6 md:pt-10">
@@ -133,22 +130,22 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
               </span>
               <span className="w-1 h-1 rounded-full bg-border" />
               <span className="flex items-center gap-1">
-                Placed at {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                Placed at {new Date(order.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
               </span>
             </div>
           </div>
-          {order.tableNumber && (
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
-                {order.mode === 'takeaway' ? 'Takeaway' : 'Dine In'}
-              </span>
-              <Badge variant="outline" className="text-foreground font-bold text-lg px-3 py-1">
-                {order.tableNumber.toLowerCase() === 'counter' 
-                  ? 'Counter' 
-                  : `Table ${order.tableNumber}`}
-              </Badge>
-            </div>
-          )}
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
+              {order.mode === 'takeaway' ? 'Takeaway' : order.tableNumber?.toLowerCase() === 'counter' ? 'Pickup' : 'Dine In'}
+            </span>
+            <Badge variant="outline" className="text-foreground font-bold text-lg px-3 py-1">
+              {order.mode === 'takeaway' || order.tableNumber?.toLowerCase() === 'counter'
+                ? 'Counter' 
+                : order.tableNumber?.toLowerCase().startsWith('table') 
+                  ? order.tableNumber 
+                  : `Table ${order.tableNumber || 'Unknown'}`}
+            </Badge>
+          </div>
         </div>
         
         {/* Status Stepper Card */}
@@ -165,90 +162,38 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
                "We've got your order and are waiting to start."}
             </p>
 
-            {/* Smart ETA Block */}
+            {/* Subtle ETA / Delay Text */}
             {order.kotStatus !== 'ready' && order.kotStatus !== 'completed' && (
-              <div className="mt-6 flex flex-col items-center justify-center">
-                <div className={`inline-flex items-center justify-center rounded-2xl px-6 py-4 shadow-sm border ${
-                  isDelayed ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800' 
-                            : 'bg-muted/50 border-transparent'
-                }`}>
-                  <div className="flex flex-col items-center">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-                      isDelayed ? 'text-orange-600 dark:text-orange-400 animate-pulse' : 'text-muted-foreground'
-                    }`}>
-                      {isDelayed ? 'Running Late' : 'Arriving In'}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {isDelayed ? (
-                        <AlertCircle className="w-5 h-5 text-orange-500 animate-bounce" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-primary" />
-                      )}
-                      <span className={`text-3xl font-bold tracking-tight ${
-                        isDelayed ? 'text-orange-700 dark:text-orange-300' : 'text-foreground'
-                      }`}>
-                        {etaText}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-3 flex items-center justify-center gap-1.5">
+                {isDelayed ? (
+                   <AlertCircle className="w-4 h-4 text-orange-500" />
+                ) : (
+                   <Clock className="w-4 h-4 text-primary" />
+                )}
+                <span className={`text-sm font-medium ${isDelayed ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
+                   {isDelayed 
+                     ? `Running a little behind schedule` 
+                     : `Expected in ${etaText}`}
+                </span>
               </div>
             )}
           </CardHeader>
           
-          <CardContent className="pt-6 pb-8">
-            <div className="relative flex justify-between items-center max-w-[280px] mx-auto">
-              {/* Progress Line Background */}
-              <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 h-1 bg-muted -z-10 rounded-full" />
+          <CardContent className="pt-6 pb-10 flex justify-center">
+            <div className="relative mt-2">
+              {/* Pulsing background effect for active states */}
+              {(order.kotStatus === 'preparing' || order.kotStatus === 'pending') && (
+                <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
+              )}
               
-              {/* Progress Line Fill */}
-              <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 h-1 -z-10 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-700 ease-in-out bg-primary ${
-                    order.kotStatus === 'ready' ? 'w-full' : 
-                    order.kotStatus === 'preparing' ? 'w-1/2' : 
-                    'w-0'
-                  }`}
-                />
-              </div>
-
-              {/* Step 1: Pending */}
-              <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
-                  currentStepIndex >= 0 
-                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  <Receipt className="h-5 w-5" />
-                </div>
-                <span className={`text-[11px] font-bold tracking-wider uppercase ${currentStepIndex >= 0 ? 'text-foreground' : 'text-muted-foreground'}`}>Received</span>
-              </div>
-
-              {/* Step 2: Preparing */}
-              <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative ${
-                  currentStepIndex >= 1 
-                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  {order.kotStatus === 'preparing' && (
-                    <span className="absolute inset-0 rounded-2xl bg-primary animate-ping opacity-30" />
-                  )}
-                  <ChefHat className="h-5 w-5" />
-                </div>
-                <span className={`text-[11px] font-bold tracking-wider uppercase ${currentStepIndex >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>Preparing</span>
-              </div>
-
-              {/* Step 3: Ready */}
-              <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
-                  currentStepIndex >= 2 
-                    ? 'bg-primary text-primary-foreground shadow-md -translate-y-1' 
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-                <span className={`text-[11px] font-bold tracking-wider uppercase ${currentStepIndex >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Ready</span>
+              <div className="relative w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                {order.kotStatus === 'ready' ? (
+                  <CheckCircle2 className="w-12 h-12 animate-in zoom-in duration-500 text-green-500" />
+                ) : order.kotStatus === 'preparing' ? (
+                  <ChefHat className="w-12 h-12 animate-pulse" />
+                ) : (
+                  <ShoppingBag className="w-10 h-10" />
+                )}
               </div>
             </div>
           </CardContent>

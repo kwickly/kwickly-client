@@ -25,12 +25,16 @@ export default function CheckoutPage() {
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [allowTakeawayOnDineIn, setAllowTakeawayOnDineIn] = useState(false);
   const [loyaltyBalance, setLoyaltyBalance] = useState<number | null>(null); // actual balance from API
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const { isAuthenticated, user } = useAuthStore();
 
   React.useEffect(() => {
     const slug = getTenantSlug(window.location.host) || 'kwickly';
     setTenantSlug(slug);
+    
+    const params = new URLSearchParams(window.location.search);
+    setSessionId(params.get('sessionId'));
 
     const init = async () => {
       try {
@@ -65,6 +69,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, clearCart, qrToken, updateItemFulfillmentMode } = useCartStore();
   const [diningMode, setDiningMode] = useState(qrToken ? 'dine_in' : 'takeaway');
+  const [manualTableNumber, setManualTableNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [useLoyalty, setUseLoyalty] = useState(false);
 
@@ -128,7 +133,7 @@ export default function CheckoutPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
       const orderPayload = {
         branchId: 'default',
-        tableNumber: qrToken ? 'QR-Ordered' : 'Counter',
+        tableNumber: qrToken ? 'QR-Ordered' : (diningMode === 'dine_in' && manualTableNumber ? `Table ${manualTableNumber}` : 'Counter'),
         mode: diningMode,
         type: 'paid',
         qrToken: qrToken || undefined,
@@ -139,7 +144,12 @@ export default function CheckoutPage() {
         })),
       };
 
-      const res = await fetch(`${apiUrl}/orders/public/${tenantSlug}`, {
+      let endpoint = `${apiUrl}/orders/public/${tenantSlug}`;
+      if (sessionId) {
+        endpoint = `${apiUrl}/orders/public/${tenantSlug}/sessions/${sessionId}/add-items`;
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload),
@@ -157,11 +167,15 @@ export default function CheckoutPage() {
       }
 
       if (diningMode === 'dine_in') {
-        toast.success('Order sent to kitchen! Enjoy your meal.');
+        toast.success(sessionId ? 'Added items to your order!' : 'Order sent to kitchen! Enjoy your meal.');
         if (data.data?.order?.id) {
           localStorage.setItem('kwickly_active_order_id', data.data.order.id);
           clearCart();
           router.push(`/orders/${data.data.order.id}`);
+          return;
+        } else if (sessionId) {
+          clearCart();
+          router.push(`/orders/${sessionId}`);
           return;
         }
       } else {
@@ -191,7 +205,7 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2 space-y-5">
 
           {/* Dining preference */}
-          <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm">
+          <Card className="rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 {qrToken ? 'Ordering Mode' : 'How would you like your order?'}
@@ -224,11 +238,27 @@ export default function CheckoutPage() {
                   ))}
                 </RadioGroup>
               )}
+              {diningMode === 'dine_in' && !qrToken && (
+                <div className="mt-4">
+                  <Label htmlFor="manualTableNumber" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Table Number
+                  </Label>
+                  <input
+                    id="manualTableNumber"
+                    type="text"
+                    placeholder="e.g. 12"
+                    value={manualTableNumber}
+                    onChange={(e) => setManualTableNumber(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm focus:outline-none focus:ring-2"
+                    style={{ '--focus-ring-color': brandColor } as React.CSSProperties}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Order items */}
-          <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm">
+          <Card className="rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">Your Items</CardTitle>
             </CardHeader>
@@ -271,7 +301,7 @@ export default function CheckoutPage() {
 
         {/* ── Right column: bill + loyalty + CTA ────────────────── */}
         <div className="space-y-5">
-          <Card className="rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+          <Card className="rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-card overflow-hidden">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold text-slate-700 dark:text-slate-300">Bill Summary</CardTitle>
             </CardHeader>
