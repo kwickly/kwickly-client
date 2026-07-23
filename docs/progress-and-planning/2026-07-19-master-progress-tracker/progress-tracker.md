@@ -90,9 +90,9 @@
 
 ## In-Progress / Upcoming Phases
 
-### ✅ Phase 9.5 — Client Storefront UI/UX Revamp & Dynamic Branding
+### 🟡 Phase 9.5 — Client Storefront UI/UX Revamp & Dynamic Branding
 
-**Goal:** Transform the storefront into a "classic, professional, trendy, and cute" consumer app using the Floating Bento aesthetic, dynamic tenant-defined branding, and a smart ETA tracker.
+**Goal:** Transform the storefront into a "classic, professional, trendy, and cute" consumer app using the Floating Bento aesthetic and dynamic tenant-defined branding.
 
 **Repos affected:** kwickly-api · kwickly-client
 
@@ -101,8 +101,22 @@
 - [x] Update client layout to dynamically inject CSS variables for font based on `themeConfig`
 - [x] Set `Poppins` as the fallback default font across the storefront
 - [x] Remove hardcoded borders and `font-black` weights in favor of soft shadows and rounded bento corners
-- [x] Swiggy-style Floating Order Tracker with live dynamic ETA (no seconds)
-- [x] Redesign `orders/[orderId]/page.tsx` Track Order page to reflect the new UI guidelines and include smart timer stalling logic for delayed orders
+- [x] Redesign `orders/[orderId]/page.tsx` Track Order page to reflect the new UI guidelines
+- [x] Integrate session appending logic for QR table orders on storefront
+
+### ✅ Phase 9.6 — Admin Orders & KDS Redesign
+- Separated Kitchen Display System (Kanban) and Order Management (Data Table) views
+- Built `/kds` with transparent ticket cards and SSE status sync
+- Built `/orders` as a robust Table with inline action icon buttons
+- Implemented `POST /v1/orders/admin/:id/cancel` and tied it to the frontend with automatic query invalidation
+
+### 🟡 Phase 9.7 — Shop Open/Close Controls (Order Acceptance)
+- [x] Added `timezone` to `branches` schema
+- [x] Implemented `isBranchOpen` utility evaluating business hours and timezone
+- [x] Refactored `POST /v1/orders/public/:slug` to reject orders when shop is closed
+- [x] Added `GET /v1/branches/public/:slug` for public storefronts to fetch hours
+- [ ] (Pending) Frontend: Master Toggle in Admin Header & Business Hours Config
+- [ ] (Pending) Frontend: Public About Page & Menu Checkout Blocking in Client Web
 
 ### 🔴 Phase 10 — Online Payments (Razorpay)
 - Wire checkout to Razorpay orders API
@@ -131,9 +145,9 @@
 
 | # | Severity | Repo | Description | Status |
 |---|---|---|---|---|
-| 1 | 🔴 High | kwickly-client | `checkout/page.tsx` hardcodes `tableNumber: 'Table 12'` for every order | 🔴 Fix in Phase 9 |
-| 2 | 🔴 High | kwickly-api | `updateOrderItems()` is destructive (DELETE + INSERT). Must become append-only | 🔴 Fix in Phase 9 |
-| 3 | 🟡 Medium | kwickly-api | Every public order creates a new `orders` row. No session concept for dine-in | 🔴 Fix in Phase 9 |
+| 1 | 🔴 High | kwickly-client | `checkout/page.tsx` hardcodes `tableNumber: 'Table 12'` for every order | ✅ Fixed in Phase 9 |
+| 2 | 🔴 High | kwickly-api | `updateOrderItems()` is destructive (DELETE + INSERT). Must become append-only | ✅ Fixed in Phase 9 |
+| 3 | 🟡 Medium | kwickly-api | Every public order creates a new `orders` row. No session concept for dine-in | ✅ Fixed in Phase 9 |
 | 4 | 🟡 Medium | kwickly-admin-web | `CreateMenuItemSheet.tsx` has Resolver type mismatch (pre-existing) | ⏸️ Deferred |
 | 5 | 🟡 Medium | kwickly-admin-web | `PlatformTenants.tsx` plan enum mismatch (BASIC/CUSTOM not in type) | ⏸️ Deferred |
-| 6 | 🟢 Low | kwickly-api | `POST /public/:slug` resolves `branchId='default'` but doesn't validate mode | 🔴 Fix in Phase 9 |
+| 6 | 🟢 Low | kwickly-api | `POST /public/:slug` resolves `branchId='default'` but doesn't validate mode | ✅ Fixed in Phase 9 |

@@ -23,6 +23,7 @@ interface OrderStatus {
   kotStatus: string | null;
   mode: string;
   tableNumber: string | null;
+  paymentStatus: string;
   subtotal: string;
   total: string;
   createdAt: string;
@@ -71,8 +72,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
           if (!prev) return prev;
           return {
             ...prev,
-            kotStatus: payload.kot.status,
-            orderStatus: payload.order.status
+            ...payload
           };
         });
       } catch (err) {
@@ -152,12 +152,14 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
         <div className="bg-card text-card-foreground rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-none overflow-hidden">
           <CardHeader className="text-center pb-2 pt-8">
             <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {order.kotStatus === 'ready' ? "It's Ready!" : 
+              {order.kotStatus === 'completed' || order.kotStatus === 'served' ? (order.paymentStatus === 'paid' ? "Bill Paid. Thank You!" : "Enjoy Your Meal!") :
+               order.kotStatus === 'ready' ? "It's Ready!" : 
                order.kotStatus === 'preparing' ? "In the Kitchen" : 
                "Order Received"}
             </h2>
             <p className="text-sm text-muted-foreground max-w-[250px] mx-auto leading-relaxed">
-              {order.kotStatus === 'ready' ? "Your order is ready to be served or picked up." : 
+              {order.kotStatus === 'completed' || order.kotStatus === 'served' ? (order.paymentStatus === 'paid' ? "We hope to see you again soon." : "Served to table. You can continue adding items to this order.") :
+               order.kotStatus === 'ready' ? "Your order is ready to be served or picked up." : 
                order.kotStatus === 'preparing' ? "The chefs are preparing your food right now." : 
                "We've got your order and are waiting to start."}
             </p>
@@ -187,7 +189,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
               )}
               
               <div className="relative w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                {order.kotStatus === 'ready' ? (
+                {order.kotStatus === 'completed' || order.kotStatus === 'served' || order.kotStatus === 'ready' ? (
                   <CheckCircle2 className="w-12 h-12 animate-in zoom-in duration-500 text-green-500" />
                 ) : order.kotStatus === 'preparing' ? (
                   <ChefHat className="w-12 h-12 animate-pulse" />
@@ -255,13 +257,38 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ orderI
         </div>
         
         {/* Actions */}
-        <div className="pt-2">
-          <Button 
-            className="w-full h-12 rounded-xl text-base font-bold"
-            onClick={() => router.push('/menu')}
-          >
-            Order More Items
-          </Button>
+        <div className="pt-2 flex flex-col gap-3">
+          {(order.kotStatus === 'completed' || order.kotStatus === 'served' || order.kotStatus === 'ready') && order.paymentStatus !== 'paid' && (
+            <Button 
+              className="w-full h-12 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => {
+                // TODO: Wire up Razorpay in Phase 10
+                alert("Payment gateway will be integrated in Phase 10!");
+              }}
+            >
+              Pay Bill (₹{Number(order.total).toFixed(2)})
+            </Button>
+          )}
+
+          {order.paymentStatus !== 'paid' && (
+            <Button 
+              variant={(order.kotStatus === 'completed' || order.kotStatus === 'served' || order.kotStatus === 'ready') ? "outline" : "default"}
+              className="w-full h-12 rounded-xl text-base font-bold"
+              onClick={() => router.push('/menu')}
+            >
+              Order More Items
+            </Button>
+          )}
+
+          {order.paymentStatus === 'paid' && (
+            <Button 
+              variant="outline"
+              className="w-full h-12 rounded-xl text-base font-bold"
+              onClick={() => router.push('/menu')}
+            >
+              Return to Menu
+            </Button>
+          )}
         </div>
 
       </main>
